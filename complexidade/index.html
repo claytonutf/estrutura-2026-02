@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complexidade de Algoritmos — Material Didático UTFPR</title>
+<meta name="description" content="Um guia visual e interativo sobre análise e complexidade de algoritmos: custo, notação Grande-O, comportamento assintótico e classes de complexidade.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16213e;
+    --ink-2:#eef2f9;
+    --panel:#ffffff;
+    --panel-2:#eef2f9;
+    --grid-line: rgba(30,60,120,0.08);
+    --grid-line-strong: rgba(30,60,120,0.16);
+    --text:#16213e;
+    --muted:#52607e;
+    --muted-2:#7482a3;
+    --amber:#c97a00;
+    --amber-dim: rgba(201,122,0,0.10);
+    --teal:#0e8f7c;
+    --teal-dim: rgba(14,143,124,0.10);
+    --coral:#c8402f;
+    --line:#dbe3f2;
+    --line-soft:#e6ecf7;
+    --bg:#f6f8fc;
+    --shadow: 0 2px 10px rgba(30,60,120,0.05), 0 10px 30px -18px rgba(30,60,120,0.18);
+    --radius: 14px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --maxw: 1120px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth; scroll-padding-top: 90px;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--amber); color:#fff8ec;}
+
+  a{color:var(--teal);}
+  a:focus-visible, button:focus-visible, input:focus-visible, .toc-link:focus-visible{
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .grid-bg{
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+
+  /* ---------- Progress bar ---------- */
+  #progress{
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg, var(--amber), var(--teal));
+    z-index:1000;
+    transition: width 0.1s linear;
+  }
+
+  /* ---------- Top bar ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:900;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 20px;
+    background: rgba(246,248,252,0.86);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--mono); font-weight:700; letter-spacing:0.02em;
+    font-size:0.95rem; color:var(--text); text-decoration:none;
+  }
+  .brand .dot{
+    width:10px;height:10px;border-radius:3px;background:var(--amber);
+    box-shadow:0 0 12px rgba(201,122,0,0.35);
+    transform:rotate(45deg);
+    flex-shrink:0;
+  }
+  nav.toc-desktop{
+    display:flex; gap:2px;
+  }
+  .toc-link{
+    font-family:var(--mono); font-size:0.78rem; color:var(--muted);
+    text-decoration:none; padding:8px 12px; border-radius:8px;
+    white-space:nowrap;
+    transition: color 0.15s, background 0.15s;
+  }
+  .toc-link:hover{ color:var(--text); background:var(--panel);}
+  .toc-link.active{ color:var(--amber); background:var(--amber-dim);}
+
+  .menu-btn{
+    display:none;
+    background:var(--panel); border:1px solid var(--line); color:var(--text);
+    width:40px;height:40px;border-radius:8px; cursor:pointer;
+    font-size:1.1rem; align-items:center; justify-content:center;
+  }
+
+  #mobile-menu{
+    display:none;
+    position:fixed; inset:0; z-index:950;
+    background:rgba(246,248,252,0.99);
+    padding: 90px 24px 24px;
+  }
+  #mobile-menu.open{ display:block; }
+  #mobile-menu a{
+    display:block; font-family:var(--mono); font-size:1rem;
+    color:var(--text); text-decoration:none; padding:14px 4px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  #mobile-menu .close-x{
+    position:absolute; top:22px; right:20px;
+    background:none;border:none;color:var(--text);font-size:1.6rem;cursor:pointer;
+  }
+
+  /* ---------- Layout helpers ---------- */
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+  section{ padding: 86px 0; border-bottom:1px solid var(--line-soft); position:relative;}
+  section:last-of-type{ border-bottom:none; }
+
+  .eyebrow{
+    font-family:var(--mono); text-transform:uppercase; letter-spacing:0.14em;
+    font-size:0.74rem; color:var(--amber); font-weight:600;
+    display:flex; align-items:center; gap:10px; margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:""; width:26px; height:2px; background:var(--amber); display:inline-block;
+  }
+  .eyebrow .idx{ color:var(--muted-2); font-weight:500;}
+
+  h2.title{
+    font-family:var(--mono); font-size:clamp(1.5rem, 3.4vw, 2.4rem);
+    font-weight:700; margin:0 0 20px 0; letter-spacing:-0.01em;
+    max-width: 26ch;
+  }
+  h3.subtitle{
+    font-family:var(--sans); font-weight:700; font-size:1.15rem;
+    margin: 0 0 10px 0; color:var(--text);
+  }
+  p.lead{
+    font-size:1.08rem; color:var(--muted); max-width:62ch; margin: 0 0 34px 0;
+  }
+  p{ color:var(--muted); max-width: 68ch; }
+  .full-p{ max-width:none; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 64px 0 40px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .hero-inner{
+    display:grid; gap: 30px;
+  }
+  .hero .eyebrow{ margin-bottom:22px;}
+  .hero h1{
+    font-family:var(--mono);
+    font-size: clamp(2rem, 5.6vw, 3.6rem);
+    line-height:1.12;
+    font-weight:800;
+    margin:0 0 22px 0;
+    letter-spacing:-0.015em;
+    max-width: 18ch;
+  }
+  .hero h1 .hl{
+    color:var(--amber);
+  }
+  .hero p.lead{ font-size:1.15rem; }
+  .hero-credit{
+    font-family:var(--mono); font-size:0.8rem; color:var(--muted-2);
+    display:flex; flex-wrap:wrap; gap: 8px 18px; margin-top:6px;
+  }
+  .hero-credit b{ color:var(--muted); font-weight:600;}
+
+  .cost-formula{
+    display:inline-flex; align-items:center; gap:14px;
+    font-family:var(--mono); font-size:1.1rem;
+    background:var(--panel); border:1px solid var(--line);
+    padding: 14px 20px; border-radius: var(--radius);
+    margin-top: 8px;
+  }
+  .cost-formula .op{ color:var(--muted-2);}
+  .cost-formula .k1{ color:var(--teal); font-weight:700;}
+  .cost-formula .k2{ color:var(--amber); font-weight:700;}
+  .cost-formula .k3{ color:#7a3fc2; font-weight:700;}
+
+  /* ---------- Cards / grids ---------- */
+  .two-col{ display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
+  .three-col{ display:grid; grid-template-columns: repeat(3,1fr); gap:20px; }
+  @media (max-width: 860px){
+    .two-col, .three-col{ grid-template-columns: 1fr; }
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px 26px;
+    box-shadow: var(--shadow);
+  }
+  .card.accent-top{ border-top:3px solid var(--amber); }
+  .card.accent-top.teal{ border-top:3px solid var(--teal); }
+  .card h4{
+    font-family:var(--mono); font-size:1rem; margin:0 0 4px 0; color:var(--text);
+    display:flex; align-items:center; gap:10px;
+  }
+  .card .tag{
+    font-family:var(--mono); font-size:0.68rem; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--ink); background:var(--amber);
+    padding:3px 8px; border-radius:5px; font-weight:700;
+  }
+  .card .tag.teal{ background:var(--teal); }
+  .card ul{ margin:14px 0 0 0; padding-left:0; list-style:none;}
+  .card ul li{
+    position:relative; padding-left:20px; margin-bottom:9px;
+    color:var(--muted); font-size:0.94rem;
+  }
+  .card ul li::before{
+    content:"›"; position:absolute; left:0; color:var(--amber); font-weight:800;
+  }
+  .card.teal-marker ul li::before{ color:var(--teal); }
+
+  /* ---------- Code block ---------- */
+  .code-panel{
+    background: #0b1526;
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    overflow:hidden;
+    margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .code-panel .code-head{
+    display:flex; align-items:center; gap:8px;
+    padding: 10px 16px; background:#101c33; border-bottom:1px solid rgba(255,255,255,0.06);
+    font-family:var(--mono); font-size:0.76rem; color:#8fa0c4;
+  }
+  .code-head .b{ width:9px;height:9px;border-radius:50%; }
+  .code-head .b1{background:#ff6159;} .code-head .b2{background:#ffbd2e;} .code-head .b3{background:#28c840;}
+  .code-lines{ display:block; }
+  .code-line{
+    display:grid; grid-template-columns: 34px 1fr auto;
+    gap: 14px;
+    align-items:center;
+    padding: 9px 16px;
+    font-family:var(--mono); font-size:0.87rem;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    cursor:default;
+    transition: background 0.15s;
+  }
+  .code-line:hover, .code-line:focus-within{ background: rgba(245,176,34,0.06); }
+  .code-line .ln{ color:#8fa0c4; text-align:right; user-select:none;}
+  .code-line .code{ color:#eef3fb; white-space:pre; overflow-x:auto;}
+  .code-line .code .kw{ color:#ffb08f;}
+  .code-line .code .fn{ color:#6fe9d4;}
+  .code-line .code .cm{ color:#a9b7d6; font-style:italic;}
+  .code-line .cost{
+    font-size:0.72rem; padding:3px 9px; border-radius:99px;
+    background:rgba(84,224,203,0.14); color:#6fe9d4; white-space:nowrap; font-weight:600;
+  }
+  .code-line .cost.loop{ background:rgba(245,176,34,0.16); color:#f5b022; }
+  .code-line .cost.zero{ background:rgba(255,255,255,0.08); color:#a9b7d6; }
+
+  .cost-tally{
+    display:flex; flex-wrap:wrap; gap:14px; margin-top: 22px;
+  }
+  .tally-chip{
+    font-family:var(--mono); font-size:0.85rem;
+    background:var(--panel); border:1px solid var(--line);
+    padding:10px 16px; border-radius:10px; color:var(--muted);
+    box-shadow: var(--shadow);
+  }
+  .tally-chip b{ color:var(--text); }
+  .tally-chip.result{ border-color:var(--amber); color:var(--amber); }
+  .tally-chip.result b{ color:var(--amber); }
+
+  /* array compare */
+  .array-compare{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:22px;}
+  @media (max-width:700px){ .array-compare{ grid-template-columns:1fr; } }
+  .array-row{ display:flex; gap:8px; margin: 14px 0; flex-wrap:wrap;}
+  .array-cell{
+    width:44px;height:44px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-weight:700; border-radius:8px;
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+  }
+  .array-label{ font-family:var(--mono); font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;}
+  .verdict{ font-size:0.9rem; margin-top:12px; padding:10px 14px; border-radius:8px; }
+  .verdict.bad{ background:rgba(200,64,47,0.1); color:var(--coral); border:1px solid rgba(200,64,47,0.3);}
+  .verdict.good{ background:var(--teal-dim); color:var(--teal); border:1px solid rgba(14,143,124,0.3);}
+
+  /* reduction */
+  .reduction{
+    display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin: 26px 0;
+    font-family:var(--mono);
+  }
+  .reduction .step{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:14px 20px; font-size:1.05rem;
+    box-shadow: var(--shadow);
+  }
+  .reduction .step .out{ color:var(--muted-2); text-decoration:line-through; opacity:0.7;}
+  .reduction .step.final{ border-color:var(--amber); color:var(--amber); font-weight:700; }
+  .reduction .arrow{ color:var(--muted-2); font-size:1.2rem;}
+
+  /* table */
+  table.growth-table{
+    width:100%; border-collapse:collapse; margin-top:20px;
+    font-family:var(--mono); font-size:0.88rem;
+  }
+  table.growth-table th, table.growth-table td{
+    padding: 12px 16px; text-align:left; border-bottom:1px solid var(--line-soft);
+  }
+  table.growth-table th{ color:var(--muted); font-weight:600; text-transform:uppercase; font-size:0.72rem; letter-spacing:0.06em;}
+  table.growth-table td.f{ color:var(--muted);}
+  table.growth-table td.g{ color:var(--amber); font-weight:700;}
+  table.growth-table tr:hover td{ background:rgba(245,176,34,0.04); }
+
+  /* ---------- Chart section (signature) ---------- */
+  .chart-shell{
+    background: radial-gradient(circle at 20% 0%, rgba(14,143,124,0.06), transparent 60%), var(--panel);
+    border:1px solid var(--line);
+    border-radius: 18px;
+    padding: 28px clamp(14px,3vw,32px) 30px;
+    margin-top: 30px;
+    box-shadow: var(--shadow);
+  }
+  .chart-controls{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom: 6px;
+  }
+  .chart-controls label{
+    font-family:var(--mono); font-size:0.8rem; color:var(--muted); display:flex; align-items:center; gap:10px;
+  }
+  .chart-controls input[type=range]{
+    width: min(320px, 55vw);
+    accent-color: var(--amber);
+  }
+  .n-readout{
+    font-family:var(--mono); font-size:1rem; color:var(--amber); font-weight:700;
+    background:var(--ink-2); padding:4px 12px; border-radius:8px; border:1px solid var(--line);
+  }
+  #growth-svg{ width:100%; height:auto; display:block; }
+  .chart-legend{
+    display:flex; flex-wrap:wrap; gap: 8px 16px; margin-top:18px;
+  }
+  .legend-item{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:0.76rem; color:var(--muted);
+    cursor:pointer; padding:5px 10px; border-radius:8px; border:1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .legend-item:hover{ background:rgba(20,40,90,0.04); }
+  .legend-item.off{ opacity:0.4; }
+  .legend-swatch{ width:14px;height:4px; border-radius:2px; }
+  .legend-value{ color:var(--text); font-weight:700; margin-left:2px; }
+
+  /* notation cards */
+  .notation-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; margin-top:26px;}
+  @media (max-width:900px){ .notation-grid{ grid-template-columns: 1fr; } }
+  .notation-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px;
+    box-shadow: var(--shadow);
+  }
+  .notation-card .symbol{
+    font-family:var(--mono); font-size:2rem; font-weight:800; color:var(--amber); line-height:1;
+  }
+  .notation-card.tight .symbol{ color:var(--teal); }
+  .notation-card.lower .symbol{ color:#7a3fc2; }
+  .notation-card h5{ margin:12px 0 6px; font-family:var(--sans); font-size:1rem;}
+  .notation-card small{ display:block; font-family:var(--mono); font-size:0.76rem; color:var(--muted); margin-top:10px; line-height:1.5;}
+  .notation-card .bound-viz{ height:56px; margin:12px 0 2px; }
+
+  /* classes list */
+  .class-list{ margin-top:26px; display:flex; flex-direction:column; gap:10px;}
+  .class-row{
+    display:grid; grid-template-columns: 120px 1fr auto;
+    gap:18px; align-items:center;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding: 14px 18px;
+    box-shadow: var(--shadow);
+  }
+  @media (max-width:700px){
+    .class-row{ grid-template-columns: 90px 1fr; }
+    .class-row .class-bar{ display:none; }
+  }
+  .class-row .notation{ font-family:var(--mono); font-weight:700; color:var(--amber); font-size:0.95rem;}
+  .class-row .desc{ color:var(--muted); font-size:0.88rem;}
+  .class-row .class-bar{ width:140px; height:8px; border-radius:5px; background:var(--ink-2); overflow:hidden; }
+  .class-row .class-bar i{ display:block; height:100%; background:linear-gradient(90deg, var(--teal), var(--amber)); border-radius:5px;}
+
+  .sum-rule{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding: 24px; margin-top:22px; font-family:var(--mono); text-align:center; font-size:1.15rem;
+    box-shadow: var(--shadow);
+  }
+  .sum-rule .example{ font-family:var(--sans); font-size:0.9rem; color:var(--muted); margin-top:14px; text-align:left;}
+
+  /* footer */
+  footer{
+    padding: 60px 0 50px;
+    background: var(--ink-2);
+    border-top:1px solid var(--line-soft);
+  }
+  .footer-grid{
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:24px;
+  }
+  .footer-brand{ font-family:var(--mono); font-weight:700; font-size:1.05rem; }
+  .footer-meta{ font-family:var(--mono); font-size:0.78rem; color:var(--muted); line-height:1.9; text-align:right;}
+  @media (max-width:700px){ .footer-meta{ text-align:left; } .footer-grid{ flex-direction:column; align-items:flex-start;} }
+
+  .back-top{
+    position:fixed; right:22px; bottom:22px; z-index:500;
+    width:46px;height:46px;border-radius:50%;
+    background:var(--panel); border:1px solid var(--line); color:var(--amber);
+    font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition: opacity 0.2s;
+    box-shadow: 0 6px 20px rgba(30,60,120,0.18);
+  }
+  .back-top.show{ opacity:1; pointer-events:auto; }
+
+  @media (max-width: 980px){
+    nav.toc-desktop{ display:none; }
+    .menu-btn{ display:flex; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header class="topbar">
+  <a href="#top" class="brand"><span class="dot"></span> COMPLEXIDADE.ALGO</a>
+  <nav class="toc-desktop" id="toc-desktop">
+    <a class="toc-link" href="#o-que-e" data-sec="o-que-e">custo</a>
+    <a class="toc-link" href="#abordagens" data-sec="abordagens">abordagens</a>
+    <a class="toc-link" href="#contando" data-sec="contando">contagem</a>
+    <a class="toc-link" href="#assintotico" data-sec="assintotico">assintótico</a>
+    <a class="toc-link" href="#grande-o" data-sec="grande-o">grande-o</a>
+    <a class="toc-link" href="#notacoes" data-sec="notacoes">notações</a>
+    <a class="toc-link" href="#classes" data-sec="classes">classes</a>
+  </nav>
+  <button class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-expanded="false">☰</button>
+</header>
+
+<div id="mobile-menu">
+  <button class="close-x" id="close-menu" aria-label="Fechar menu">×</button>
+  <a href="#o-que-e">01 · O que é custo</a>
+  <a href="#abordagens">02 · Duas abordagens</a>
+  <a href="#contando">03 · Contando instruções</a>
+  <a href="#assintotico">04 · Comportamento assintótico</a>
+  <a href="#grande-o">05 · Notação Grande-O</a>
+  <a href="#notacoes">06 · Outras notações</a>
+  <a href="#classes">07 · Classes de complexidade</a>
+</div>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero grid-bg">
+    <div class="wrap hero-inner">
+      <div class="eyebrow">Análise de Algoritmos</div>
+      <h1>Dois algoritmos podem resolver o <span class="hl">mesmo problema</span> — e ainda assim ter custos muito diferentes.</h1>
+      <p class="lead">Para decidir qual é realmente melhor, a ciência da computação usa uma régua chamada <b style="color:var(--text)">complexidade computacional</b>: uma forma de medir o custo de um algoritmo — em tempo e em memória — conforme o tamanho da entrada cresce.</p>
+      <div class="cost-formula">
+        <span class="k1">custo</span> <span class="op">=</span> <span class="k2">memória</span> <span class="op">+</span> <span class="k3">tempo</span>
+      </div>
+      <div class="hero-credit">
+        <span><b>Universidade Tecnológica Federal do Paraná</b></span>
+        <span>·</span>
+        <span>Prof. Clayton Kossoski</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 O QUE É -->
+  <section id="o-que-e" class="wrap">
+    <div class="eyebrow"><span class="idx">01</span> Fundamentos</div>
+    <h2 class="title">O que a análise de algoritmos tenta responder</h2>
+    <p class="lead">A pergunta central é simples de enunciar e difícil de responder de forma definitiva: <b style="color:var(--text)">dá para fazer este algoritmo de um jeito mais eficiente?</b> Como o mesmo problema costuma admitir várias soluções, é preciso uma forma justa de comparar essas soluções entre si.</p>
+
+    <div class="two-col">
+      <div class="card">
+        <h4>Quando a diferença importa</h4>
+        <p style="max-width:none; margin-top:10px;">Duas soluções para o mesmo problema raramente são igualmente eficientes. Essa diferença de custo pode se comportar de dois jeitos bem distintos:</p>
+        <ul>
+          <li>Ser irrelevante quando poucos elementos são processados;</li>
+          <li>Crescer proporcionalmente ao número de elementos — e se tornar decisiva conforme a entrada aumenta.</li>
+        </ul>
+      </div>
+      <div class="card accent-top teal">
+        <h4><span class="tag teal">custo</span> Memória + tempo</h4>
+        <p style="max-width:none; margin-top:10px;">A complexidade computacional resume o custo de aplicar um algoritmo em dois componentes: quanto <b style="color:var(--text)">espaço</b> ele consome e quanto <b style="color:var(--text)">tempo</b> sua execução leva. Para decidir qual algoritmo é mais eficiente, existem duas abordagens complementares — a empírica e a matemática — exploradas a seguir.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 ABORDAGENS -->
+  <section id="abordagens" class="wrap">
+    <div class="eyebrow"><span class="idx">02</span> Métodos de comparação</div>
+    <h2 class="title">Duas formas de saber qual algoritmo é melhor</h2>
+    <p class="lead">A análise <b style="color:var(--text)">empírica</b> mede o algoritmo em execução; a análise <b style="color:var(--text)">matemática</b> estuda sua ideia, independentemente de hardware ou linguagem. Cada uma tem seu papel.</p>
+
+    <div class="two-col">
+      <div class="card">
+        <h4><span class="tag">Empírica</span> Medir a execução real</h4>
+        <p style="max-width:none;margin-top:10px; font-size:0.92rem;">Avalia o custo a partir da execução do programa já implementado.</p>
+        <h5 style="font-family:var(--mono); font-size:0.78rem; color:var(--teal); margin:16px 0 4px; text-transform:uppercase; letter-spacing:0.05em;">Vantagens</h5>
+        <ul>
+          <li>Mede o desempenho real numa configuração específica de máquina/linguagem;</li>
+          <li>Revela custos não aparentes, como a alocação de memória;</li>
+          <li>Permite comparar computadores diferentes;</li>
+          <li>Permite comparar linguagens diferentes.</li>
+        </ul>
+        <h5 style="font-family:var(--mono); font-size:0.78rem; color:var(--coral); margin:18px 0 4px; text-transform:uppercase; letter-spacing:0.05em;">Dificuldades</h5>
+        <ul>
+          <li>Exige implementar o algoritmo — depende da habilidade de quem programa;</li>
+          <li>O resultado pode ser mascarado pelo hardware ou por eventos do software;</li>
+          <li>É preciso escolher a natureza dos dados: reais, aleatórios ou perversos.</li>
+        </ul>
+      </div>
+
+      <div class="card accent-top">
+        <h4><span class="tag">Matemática</span> Estudar a ideia do algoritmo</h4>
+        <p style="max-width:none;margin-top:10px; font-size:0.92rem;">Quando o ideal é medir o algoritmo de forma independente de hardware e linguagem, usa-se um computador idealizado que considera apenas os custos dominantes.</p>
+        <ul style="margin-top:20px;">
+          <li>Ignora detalhes de baixo nível: linguagem, hardware, conjunto de instruções da CPU;</li>
+          <li>Revela como o algoritmo se comporta quando a entrada cresce;</li>
+          <li>Expressa a relação entre o tamanho da entrada e o tempo necessário para processá-la;</li>
+          <li>É o caminho usado no restante deste material.</li>
+        </ul>
+        <div class="verdict good" style="margin-top:20px;">Dados aleatórios revelam o desempenho médio; dados perversos revelam o pior caso.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 CONTANDO INSTRUÇÕES -->
+  <section id="contando" class="wrap">
+    <div class="eyebrow"><span class="idx">03</span> Exemplo guiado</div>
+    <h2 class="title">Contando instruções: encontrando o maior valor de um array</h2>
+    <p class="lead">Para calcular o custo de um algoritmo matematicamente, contamos quantas <b style="color:var(--text)">instruções simples</b> — atribuições, acessos, comparações, incrementos, operações aritméticas — ele executa. Comandos de seleção como o <code style="color:var(--teal)">if</code> têm custo zero: não contam como instrução.</p>
+
+    <div class="code-panel">
+      <div class="code-head"><span class="b b1"></span><span class="b b2"></span><span class="b b3"></span> maior-valor.c</div>
+      <div class="code-lines">
+        <div class="code-line"><span class="ln">1</span><span class="code">M <span class="kw">=</span> A[0]<span class="cm">;  // copia o 1º elemento para M</span></span><span class="cost">1 instrução</span></div>
+        <div class="code-line"><span class="ln">2</span><span class="code"><span class="cm">// percorre o restante do array</span></span><span class="cost zero">custo 0</span></div>
+        <div class="code-line"><span class="ln">3</span><span class="code"><span class="kw">for</span> (i <span class="kw">=</span> 1; i <span class="kw">&lt;</span> n; i<span class="kw">++</span>)</span><span class="cost loop">2 + 2n</span></div>
+        <div class="code-line"><span class="ln">4</span><span class="code">&nbsp;&nbsp;<span class="kw">if</span> (A[i] <span class="kw">&gt;=</span> M)</span><span class="cost zero">custo 0*</span></div>
+        <div class="code-line"><span class="ln">5</span><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;M <span class="kw">=</span> A[i]<span class="cm">;</span></span><span class="cost">0 a n</span></div>
+      </div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--muted-2); margin-top:-14px;">* o comando <code style="color:var(--teal)">if</code> em si tem custo zero — mas o acesso e a comparação <code style="color:var(--teal)">A[i] &gt;= M</code> contam como 1 instrução, executada n vezes.</p>
+
+    <div class="cost-tally">
+      <div class="tally-chip"><b>Linha 1</b> — 1 instrução (execução única)</div>
+      <div class="tally-chip"><b>Inicialização do for</b> — 2 instruções (i = 1 e a 1ª comparação)</div>
+      <div class="tally-chip"><b>A cada iteração</b> — 2 instruções (i++ e a comparação seguinte), repetidas n vezes → 2n</div>
+      <div class="tally-chip result"><b>Fora do corpo do laço:</b> f(n) = 2n + 3</div>
+    </div>
+
+    <h3 class="subtitle" style="margin-top:44px;">O corpo do laço muda tudo: o pior caso</h3>
+    <p style="max-width:70ch;">Dentro do <code style="color:var(--teal)">if</code>, o acesso <code style="color:var(--teal)">A[i] &gt;= M</code> custa 1 instrução — sempre executada. Já a atribuição <code style="color:var(--teal)">M = A[i]</code> só ocorre quando a comparação é verdadeira. Isso significa que o custo total agora depende também do <b style="color:var(--text)">conteúdo</b> do array, não só do seu tamanho.</p>
+
+    <div class="array-compare">
+      <div class="card">
+        <div class="array-label">A1 — ordem crescente</div>
+        <div class="array-row">
+          <div class="array-cell">1</div><div class="array-cell">2</div><div class="array-cell">3</div><div class="array-cell">4</div>
+        </div>
+        <p style="margin:0; font-size:0.9rem;">O <code style="color:var(--teal)">if</code> é sempre verdadeiro: M é atualizado em toda iteração.</p>
+        <div class="verdict bad">Pior caso — máximo de instruções executadas</div>
+      </div>
+      <div class="card">
+        <div class="array-label">A2 — ordem decrescente</div>
+        <div class="array-row">
+          <div class="array-cell">4</div><div class="array-cell">3</div><div class="array-cell">2</div><div class="array-cell">1</div>
+        </div>
+        <p style="margin:0; font-size:0.9rem;">O <code style="color:var(--teal)">if</code> é sempre falso: M nunca precisa ser atualizado.</p>
+        <div class="verdict good">Melhor caso — mínimo de instruções executadas</div>
+      </div>
+    </div>
+
+    <div class="cost-tally" style="margin-top:26px;">
+      <div class="tally-chip result"><b>Pior caso (array crescente):</b> f(n) = 2n + 2n + 3 = 4n + 3</div>
+    </div>
+  </section>
+
+  <!-- 04 ASSINTOTICO -->
+  <section id="assintotico" class="wrap">
+    <div class="eyebrow"><span class="idx">04</span> Simplificando a função de custo</div>
+    <h2 class="title">Comportamento assintótico: descartando o que não importa</h2>
+    <p class="lead">A função <b style="color:var(--text)">f(n) = 4n + 3</b> descreve o custo exato — mas nem todo termo é necessário para entender o que acontece quando n cresce muito. Se um algoritmo é mais rápido para entradas grandes, ele tende a continuar mais rápido também para entradas pequenas.</p>
+
+    <h3 class="subtitle">Duas regras de descarte</h3>
+    <div class="two-col">
+      <div class="card">
+        <h4>1 · Descartar constantes isoladas</h4>
+        <p style="max-width:none; margin-top:10px;">O termo <b>+3</b> não é afetado pelo valor de n — é apenas uma constante de inicialização. Pode ser removido sem alterar o comportamento de crescimento da função.</p>
+      </div>
+      <div class="card">
+        <h4>2 · Descartar constantes multiplicativas</h4>
+        <p style="max-width:none; margin-top:10px;">O <b>4</b> que multiplica n também é descartado: ele varia conforme a linguagem e o compilador (em Pascal, por exemplo, o acesso a um array inclui uma verificação de limites que não existe em C), e não representa a ideia do algoritmo.</p>
+      </div>
+    </div>
+
+    <div class="reduction">
+      <div class="step"><span class="out">4n + 3</span></div>
+      <span class="arrow">→</span>
+      <div class="step"><span class="out">4</span>n</div>
+      <span class="arrow">→</span>
+      <div class="step final">n</div>
+    </div>
+
+    <p style="max-width:70ch;">O que sobra é o <b style="color:var(--text)">comportamento assintótico</b>: como f(n) se comporta quando n tende ao infinito. O termo de maior grau sempre domina — mesmo que outros termos tenham constantes maiores. Por isso, g(n) = 1000n + 500 acaba perdendo para h(n) = n² + n + 1 a partir de um certo n, apesar da constante 1000.</p>
+
+    <table class="growth-table">
+      <thead><tr><th>Função de custo</th><th>Comportamento assintótico</th></tr></thead>
+      <tbody>
+        <tr><td class="f">f(n) = 10⁵</td><td class="g">f(n) = 1</td></tr>
+        <tr><td class="f">f(n) = 15n + 2</td><td class="g">f(n) = n</td></tr>
+        <tr><td class="f">f(n) = n² + 5n + 2</td><td class="g">f(n) = n²</td></tr>
+        <tr><td class="f">f(n) = 5n³ + 200n² + 112</td><td class="g">f(n) = n³</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.85rem; color:var(--muted-2);">Regra prática: um programa sem laços custa f(n) = 1; um laço de 1 a n custa f(n) = n; dois laços aninhados custam f(n) = n²; e assim por diante.</p>
+  </section>
+
+  <!-- SIGNATURE CHART -->
+  <section id="crescimento" class="wrap">
+    <div class="eyebrow"><span class="idx">✦</span> Visualização interativa</div>
+    <h2 class="title">Veja as curvas de crescimento — e onde uma ultrapassa a outra</h2>
+    <p class="lead">Mova o controle para mudar o tamanho da entrada (n) e observe como cada classe de complexidade evolui. Clique nos rótulos da legenda para isolar curvas. A escala vertical é logarítmica — é a única forma de caber O(1) e O(n!) no mesmo gráfico.</p>
+
+    <div class="chart-shell">
+      <div class="chart-controls">
+        <label for="n-slider">tamanho da entrada (n)
+          <input type="range" id="n-slider" min="1" max="20" value="10" step="1">
+        </label>
+        <span class="n-readout">n = <span id="n-value">10</span></span>
+      </div>
+      <svg id="growth-svg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Gráfico de curvas de crescimento das classes de complexidade"></svg>
+      <div class="chart-legend" id="chart-legend"></div>
+    </div>
+  </section>
+
+  <!-- 05 GRANDE-O -->
+  <section id="grande-o" class="wrap">
+    <div class="eyebrow"><span class="idx">05</span> A notação mais usada</div>
+    <h2 class="title">Notação Grande-O: o limite superior do pior caso</h2>
+    <p class="lead">Entre as formas de análise assintótica, a <b style="color:var(--text)">notação Grande-O (O)</b> é a mais conhecida. Ela descreve o custo do algoritmo no <b style="color:var(--text)">pior caso possível</b>, estabelecendo um teto que o algoritmo nunca ultrapassa.</p>
+
+    <div class="card accent-top" style="margin-top:20px;">
+      <h4>Definição formal</h4>
+      <p style="max-width:none; margin-top:10px;">Uma função de custo f(n) é <b>O(g(n))</b> se existem constantes positivas <b>c</b> e <b>m</b> tais que, para todo n ≥ m:</p>
+      <div class="cost-formula" style="margin-top:10px;"><span class="k1">f(n)</span> <span class="op">≤</span> <span class="k2">c · g(n)</span></div>
+    </div>
+
+    <h3 class="subtitle" style="margin-top:40px;">Exemplo: selection sort</h3>
+    <p style="max-width:70ch;">O selection sort percorre um array de tamanho n em busca do menor valor e o move para a posição correta, repetindo o processo para cada posição seguinte. O laço interno executa n−1, depois n−2, ... até 1 vez — uma soma que resulta em <b style="color:var(--text)">S(n) = n(n−1)/2</b>.</p>
+    <p style="max-width:70ch;">Uma forma mais simples de obter um limite superior é imaginar uma versão <i>pior</i> do algoritmo — com o laço interno sempre executando n vezes, mesmo que isso desperdice iterações. Com dois laços aninhados de n execuções, a função de custo passa a ser <b style="color:var(--text)">f(n) = n²</b>.</p>
+
+    <div class="tally-chip result" style="display:inline-block;">Conclusão: o selection sort é O(n²) — nunca pior do que n², assintoticamente.</div>
+  </section>
+
+  <!-- 06 OUTRAS NOTAÇÕES -->
+  <section id="notacoes" class="wrap">
+    <div class="eyebrow"><span class="idx">06</span> A família completa</div>
+    <h2 class="title">Além do Grande-O: limites inferior, superior e o caso exato</h2>
+    <p class="lead">O Grande-O não é a única notação assintótica. Cada uma responde a uma pergunta diferente sobre o comportamento de f(n).</p>
+
+    <div class="notation-grid">
+      <div class="notation-card lower">
+        <div class="symbol">Ω</div>
+        <h5>Ômega — melhor caso</h5>
+        <p style="font-size:0.86rem; margin:0;">Descreve o limite assintótico <b style="color:var(--text)">inferior</b>: f(n) é no mínimo tão custosa quanto g(n).</p>
+        <small>f(n) é Ω(g(n)) se existem c, m &gt; 0 tais que f(n) ≥ c·g(n) para todo n ≥ m.</small>
+      </div>
+      <div class="notation-card">
+        <div class="symbol">O</div>
+        <h5>Grande-O — pior caso</h5>
+        <p style="font-size:0.86rem; margin:0;">Descreve o limite assintótico <b style="color:var(--text)">superior</b>: f(n) nunca é pior do que g(n).</p>
+        <small>f(n) é O(g(n)) se existem c, m &gt; 0 tais que f(n) ≤ c·g(n) para todo n ≥ m.</small>
+      </div>
+      <div class="notation-card tight">
+        <div class="symbol">θ</div>
+        <h5>Theta — limite exato</h5>
+        <p style="font-size:0.86rem; margin:0;">Descreve o limite <b style="color:var(--text)">firme</b>: f(n) cresce exatamente como g(n), a menos de constantes.</p>
+        <small>f(n) é θ(g(n)) se existem c₁, c₂, m &gt; 0 tais que c₁·g(n) ≤ f(n) ≤ c₂·g(n) para todo n ≥ m.</small>
+      </div>
+      <div class="notation-card lower">
+        <div class="symbol">ω</div>
+        <h5>Pequeno-ômega</h5>
+        <p style="font-size:0.86rem; margin:0;">Como Ω, mas mais restritiva: f(n) cresce estritamente mais rápido do que g(n), para <b style="color:var(--text)">qualquer</b> constante c.</p>
+        <small>f(n) é ω(g(n)) se, para toda constante c &gt; 0, existe m &gt; 0 tal que f(n) &gt; c·g(n) para todo n ≥ m.</small>
+      </div>
+      <div class="notation-card">
+        <div class="symbol">ο</div>
+        <h5>Pequeno-o</h5>
+        <p style="font-size:0.86rem; margin:0;">Como O, mas mais restritiva: f(n) cresce estritamente mais devagar do que g(n), para <b style="color:var(--text)">qualquer</b> constante c.</p>
+        <small>f(n) é ο(g(n)) se, para toda constante c &gt; 0, existe m &gt; 0 tal que f(n) &lt; c·g(n) para todo n ≥ m.</small>
+      </div>
+      <div class="notation-card">
+        <div class="symbol">Σ</div>
+        <h5>Regra da soma</h5>
+        <p style="font-size:0.86rem; margin:0;">Ao encadear dois algoritmos, o custo total é dado pelo maior deles.</p>
+        <small>O(f(n)) + O(g(n)) = O(max(f(n), g(n)))</small>
+      </div>
+    </div>
+
+    <div class="sum-rule">
+      O(n) + O(n²) = O(n²)
+      <div class="example">Se dois algoritmos em sequência custam O(n) e O(n²), o custo total do par é O(n²) — o menor termo se torna irrelevante. Da mesma forma, O(n) + O(n log n) = O(n log n).</div>
+    </div>
+  </section>
+
+  <!-- 07 CLASSES -->
+  <section id="classes" class="wrap">
+    <div class="eyebrow"><span class="idx">07</span> Hierarquia de crescimento</div>
+    <h2 class="title">As classes de complexidade mais comuns</h2>
+    <p class="lead">Da mais rápida para a mais lenta — a mesma ordem que você viu <a href="#crescimento">no gráfico acima</a>.</p>
+
+    <div class="class-list">
+      <div class="class-row"><span class="notation">O(1)</span><span class="desc">Constante — número fixo de instruções, independente do tamanho da entrada.</span><span class="class-bar"><i style="width:3%"></i></span></div>
+      <div class="class-row"><span class="notation">O(log n)</span><span class="desc">Logarítmica — típica de algoritmos que reduzem o problema pela metade a cada passo.</span><span class="class-bar"><i style="width:12%"></i></span></div>
+      <div class="class-row"><span class="notation">O(n)</span><span class="desc">Linear — uma quantidade fixa de operações por elemento de entrada.</span><span class="class-bar"><i style="width:24%"></i></span></div>
+      <div class="class-row"><span class="notation">O(n log n)</span><span class="desc">Log-linear — algoritmos que particionam os dados, resolvem cada parte e depois combinam.</span><span class="class-bar"><i style="width:38%"></i></span></div>
+      <div class="class-row"><span class="notation">O(n²)</span><span class="desc">Quadrática — comum quando dados são processados aos pares, com dois laços aninhados.</span><span class="class-bar"><i style="width:55%"></i></span></div>
+      <div class="class-row"><span class="notation">O(n³)</span><span class="desc">Cúbica — três estruturas de repetição aninhadas.</span><span class="class-bar"><i style="width:70%"></i></span></div>
+      <div class="class-row"><span class="notation">O(2ⁿ)</span><span class="desc">Exponencial — comum em soluções de força bruta; pouco prática para entradas grandes.</span><span class="class-bar"><i style="width:88%"></i></span></div>
+      <div class="class-row"><span class="notation">O(n!)</span><span class="desc">Fatorial — força bruta no limite; cresce mais rápido que qualquer classe anterior.</span><span class="class-bar"><i style="width:100%"></i></span></div>
+    </div>
+
+    <p style="margin-top:28px; font-family:var(--mono); font-size:0.95rem; color:var(--muted); text-align:center;">
+      O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²) &lt; O(n³) &lt; O(2ⁿ) &lt; O(n!)
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>
+      <div class="footer-brand"><span style="color:var(--amber)">▪</span> Complexidade de Algoritmos</div>
+      <p style="max-width:46ch; margin-top:10px; font-size:0.85rem;">Material didático produzido para fins educacionais, com base no conteúdo do professor.</p>
+    </div>
+    <div class="footer-meta">
+      Universidade Tecnológica Federal do Paraná — UTFPR<br>
+      Prof. Clayton Kossoski<br>
+      Disciplina de Análise de Algoritmos
+    </div>
+  </div>
+</footer>
+
+<button class="back-top" id="back-top" aria-label="Voltar ao topo">↑</button>
+
+<script>
+(function(){
+  // ---- progress bar ----
+  const progress = document.getElementById('progress');
+  const backTop = document.getElementById('back-top');
+  function onScroll(){
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progress.style.width = scrolled + '%';
+    backTop.classList.toggle('show', h.scrollTop > 600);
+  }
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+  // ---- mobile menu ----
+  const menuBtn = document.getElementById('menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const closeMenu = document.getElementById('close-menu');
+  function toggleMenu(open){
+    mobileMenu.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', open ? 'true':'false');
+  }
+  menuBtn.addEventListener('click', ()=> toggleMenu(true));
+  closeMenu.addEventListener('click', ()=> toggleMenu(false));
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', ()=> toggleMenu(false)));
+
+  // ---- active section highlight (desktop nav) ----
+  const sections = ['o-que-e','abordagens','contando','assintotico','grande-o','notacoes','classes'];
+  const links = document.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=> l.classList.toggle('active', l.dataset.sec === entry.target.id));
+      }
+    });
+  }, {rootMargin: '-40% 0px -55% 0px'});
+  sections.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) observer.observe(el);
+  });
+
+  // ---- growth chart ----
+  const funcs = [
+    {key:'O(1)',  color:'#64749c', calc: n => 1},
+    {key:'O(log n)', color:'#7a3fc2', calc: n => Math.max(Math.log2(n),0.01)},
+    {key:'O(n)', color:'#0e8f7c', calc: n => n},
+    {key:'O(n log n)', color:'#2f6fd1', calc: n => n*Math.max(Math.log2(n),0.01)},
+    {key:'O(n²)', color:'#c97a00', calc: n => n*n},
+    {key:'O(n³)', color:'#d9720d', calc: n => Math.pow(n,3)},
+    {key:'O(2ⁿ)', color:'#dc5c47', calc: n => Math.pow(2,n)},
+    {key:'O(n!)', color:'#c62d55', calc: n => factorial(n)},
+  ];
+
+  function factorial(n){
+    let r = 1;
+    for(let i=2;i<=n;i++) r *= i;
+    return r;
+  }
+
+  const N_MAX = 20;
+  const W = 900, H = 380;
+  const padL = 46, padR = 20, padT = 20, padB = 34;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  // precompute log10 domain
+  let maxVal = 0;
+  for(let n=1;n<=N_MAX;n++){
+    funcs.forEach(f => { const v = f.calc(n); if(v > maxVal) maxVal = v; });
+  }
+  const maxLog = Math.log10(maxVal + 1);
+
+  function xFor(n){ return padL + (n-1)/(N_MAX-1) * plotW; }
+  function yFor(v){
+    const lv = Math.log10(v+1);
+    return padT + plotH - (lv/maxLog) * plotH;
+  }
+
+  const svg = document.getElementById('growth-svg');
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const activeSet = new Set(funcs.map(f=>f.key));
+
+  function fmtValue(v){
+    if(v >= 1e6) return v.toExponential(2).replace('+','');
+    return Math.round(v).toLocaleString('pt-BR');
+  }
+
+  function render(){
+    svg.innerHTML = '';
+
+    // grid lines (horizontal, log-scaled decades)
+    const gridGroup = document.createElementNS(svgNS,'g');
+    for(let p=0; p<=maxLog; p++){
+      const y = yFor(Math.pow(10,p)-1+1);
+      const line = document.createElementNS(svgNS,'line');
+      line.setAttribute('x1', padL); line.setAttribute('x2', W-padR);
+      line.setAttribute('y1', y); line.setAttribute('y2', y);
+      line.setAttribute('stroke', 'rgba(20,40,90,0.10)');
+      line.setAttribute('stroke-width','1');
+      gridGroup.appendChild(line);
+      const label = document.createElementNS(svgNS,'text');
+      label.setAttribute('x', 6); label.setAttribute('y', y+4);
+      label.setAttribute('fill', '#3d4a6b'); label.setAttribute('font-size','10');
+      label.setAttribute('font-family','JetBrains Mono, monospace');
+      label.textContent = '10' + (p>0 ? '^'+p : '');
+      gridGroup.appendChild(label);
+    }
+    svg.appendChild(gridGroup);
+
+    // x axis label
+    const xlabel = document.createElementNS(svgNS,'text');
+    xlabel.setAttribute('x', W/2); xlabel.setAttribute('y', H-6);
+    xlabel.setAttribute('fill', '#3d4a6b'); xlabel.setAttribute('font-size','11');
+    xlabel.setAttribute('text-anchor','middle');
+    xlabel.setAttribute('font-family','JetBrains Mono, monospace');
+    xlabel.textContent = 'tamanho da entrada (n) — escala vertical logarítmica';
+    svg.appendChild(xlabel);
+
+    // curves
+    funcs.forEach(f=>{
+      if(!activeSet.has(f.key)) return;
+      let d = '';
+      for(let n=1;n<=N_MAX;n++){
+        const x = xFor(n), y = yFor(f.calc(n));
+        d += (n===1 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+      }
+      const path = document.createElementNS(svgNS,'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke', f.color);
+      path.setAttribute('stroke-width', 2.4);
+      path.setAttribute('stroke-linecap','round');
+      path.setAttribute('opacity', '0.9');
+      svg.appendChild(path);
+    });
+
+    // current-n marker line
+    const n = parseInt(document.getElementById('n-slider').value, 10);
+    const mx = xFor(n);
+    const mline = document.createElementNS(svgNS,'line');
+    mline.setAttribute('x1', mx); mline.setAttribute('x2', mx);
+    mline.setAttribute('y1', padT); mline.setAttribute('y2', H-padB);
+    mline.setAttribute('stroke', '#c97a00'); mline.setAttribute('stroke-width','1.4');
+    mline.setAttribute('stroke-dasharray','4 4');
+    svg.appendChild(mline);
+
+    funcs.forEach(f=>{
+      if(!activeSet.has(f.key)) return;
+      const val = f.calc(n);
+      const cx = xFor(n), cy = yFor(val);
+      const dot = document.createElementNS(svgNS,'circle');
+      dot.setAttribute('cx', cx); dot.setAttribute('cy', cy); dot.setAttribute('r', 4.5);
+      dot.setAttribute('fill', f.color);
+      dot.setAttribute('stroke', '#ffffff'); dot.setAttribute('stroke-width','1.6');
+      svg.appendChild(dot);
+    });
+
+    renderLegend(n);
+  }
+
+  function renderLegend(n){
+    const legend = document.getElementById('chart-legend');
+    legend.innerHTML = '';
+    funcs.forEach(f=>{
+      const item = document.createElement('div');
+      item.className = 'legend-item' + (activeSet.has(f.key) ? '' : ' off');
+      item.innerHTML = '<span class="legend-swatch" style="background:'+f.color+'"></span>' +
+        f.key + '<span class="legend-value">' + fmtValue(f.calc(n)) + '</span>';
+      item.addEventListener('click', ()=>{
+        if(activeSet.has(f.key)) activeSet.delete(f.key); else activeSet.add(f.key);
+        render();
+      });
+      legend.appendChild(item);
+    });
+  }
+
+  document.getElementById('n-slider').addEventListener('input', (e)=>{
+    document.getElementById('n-value').textContent = e.target.value;
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
