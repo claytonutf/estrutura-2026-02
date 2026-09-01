@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Comparação didática entre C e C++ — bibliotecas, recursos, memória, strings e exemplos.">
+<title>C × C++ | Guia Comparativo</title>
+<style>
+:root{
+  --bg:#f5f7fb; --surface:#fff; --surface2:#eef2f8; --text:#172033; --muted:#5d687c;
+  --border:#dce2ec; --accent:#315efb; --accent2:#7c3aed; --good:#0f9d70; --warn:#b56a00;
+  --shadow:0 16px 40px rgba(30,45,80,.09); --radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+background:var(--bg);color:var(--text);line-height:1.6}
+a{color:inherit}
+.container{width:min(1180px,calc(100% - 32px));margin:auto}
+header{
+  background:linear-gradient(135deg,#172554 0%,#315efb 55%,#7c3aed 100%);
+  color:#fff;padding:72px 0 58px;position:relative;overflow:hidden
+}
+header:before,header:after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.08)}
+header:before{width:360px;height:360px;right:-100px;top:-180px}
+header:after{width:260px;height:260px;left:-120px;bottom:-170px}
+.eyebrow{font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem;opacity:.82}
+h1{font-size:clamp(2.4rem,6vw,4.8rem);line-height:1.02;margin:14px 0 18px;max-width:850px}
+.hero-text{font-size:clamp(1rem,2vw,1.25rem);max-width:760px;color:#e8edff}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.pill{padding:8px 13px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);border-radius:999px;font-size:.9rem}
+nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;gap:8px;overflow:auto;padding:10px 0}
+.nav-inner a{text-decoration:none;white-space:nowrap;padding:9px 13px;border-radius:10px;color:var(--muted);font-weight:700;font-size:.9rem}
+.nav-inner a:hover{background:var(--surface2);color:var(--accent)}
+main{padding:44px 0 70px}
+section{scroll-margin-top:76px;margin-bottom:58px}
+.section-title{display:flex;gap:14px;align-items:flex-start;margin-bottom:22px}
+.number{min-width:38px;height:38px;border-radius:12px;background:#e8edff;color:var(--accent);display:grid;place-items:center;font-weight:900}
+h2{font-size:clamp(1.65rem,3vw,2.35rem);line-height:1.15;margin:2px 0 6px}
+.lead{color:var(--muted);margin:0;max-width:800px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 8px;font-size:1.15rem}
+.card p{margin:0;color:var(--muted)}
+.badge{display:inline-flex;padding:5px 9px;border-radius:8px;font-size:.76rem;font-weight:900;margin-bottom:12px}
+.badge.c{background:#e8edff;color:#274fd5}.badge.cpp{background:#f0e9ff;color:#6d28d9}.badge.std{background:#e5f8f1;color:#087653}
+.compare{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
+.compare table{width:100%;border-collapse:collapse}
+.compare th,.compare td{padding:15px 17px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.compare th{background:#f7f9fc;font-size:.88rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.compare tr:last-child td{border-bottom:0}
+.compare td:first-child{font-weight:800;width:22%}
+.code-wrap{position:relative}
+pre{margin:0;background:#111827;color:#e7edf8;border-radius:16px;padding:20px;overflow:auto;font:500 .88rem/1.7 "SFMono-Regular",Consolas,monospace}
+.copy{position:absolute;right:10px;top:10px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px;padding:6px 9px;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.library-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.lib{padding:16px;border:1px solid var(--border);border-radius:14px;background:#fff}
+.lib code{display:block;font-weight:900;color:var(--accent);margin-bottom:4px}
+.lib small{color:var(--muted)}
+.callout{padding:20px 22px;border-left:5px solid var(--accent);background:#edf2ff;border-radius:0 16px 16px 0}
+.callout strong{display:block;margin-bottom:4px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.quiz{background:linear-gradient(135deg,#101a3d,#252b68);color:#fff;border-radius:24px;padding:28px;box-shadow:var(--shadow)}
+.quiz p{color:#dce2ff}
+.answers{display:grid;gap:10px;margin-top:18px}
+.answer{padding:12px 15px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;text-align:left;cursor:pointer}
+.answer:hover{background:rgba(255,255,255,.14)}
+.feedback{min-height:28px;margin-top:15px;font-weight:800}
+footer{background:#111827;color:#c8d0df;padding:34px 0}
+footer strong{color:#fff}
+.footer-line{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+@media(max-width:850px){
+ .grid,.grid-3{grid-template-columns:1fr 1fr}.library-list{grid-template-columns:1fr 1fr}
+ .compare{overflow-x:auto}.compare table{min-width:720px}
+}
+@media(max-width:560px){
+ .container{width:min(100% - 22px,1180px)} header{padding:52px 0 44px}
+ .grid,.grid-3,.library-list{grid-template-columns:1fr}
+ main{padding-top:32px}.card{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="eyebrow">Guia visual de programação</div>
+    <h1>C × C++</h1>
+    <p class="hero-text">Uma comparação didática entre duas linguagens próximas, mas com propostas diferentes — do C procedural ao C++ multiparadigma.</p>
+    <div class="hero-meta">
+      <span class="pill">Bibliotecas</span><span class="pill">Sintaxe</span><span class="pill">Memória</span>
+      <span class="pill">Paradigmas</span><span class="pill">Exemplos práticos</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="#visao">Visão geral</a><a href="#comparacao">Comparação</a><a href="#bibliotecas">Bibliotecas</a>
+    <a href="#codigo">Código</a><a href="#memoria">Memória</a><a href="#quiz">Teste rápido</a>
+  </div>
+</nav>
+
+<main class="container">
+
+<section id="visao">
+  <div class="section-title"><div class="number">1</div><div><h2>Primeiro: qual é a diferença?</h2><p class="lead">C e C++ compartilham raízes e muitos conceitos, mas não são a mesma linguagem.</p></div></div>
+  <div class="grid-3">
+    <article class="card"><span class="badge c">C</span><h3>Procedural e direto</h3><p>Foca em funções, estruturas, ponteiros e controle explícito dos recursos. É comum em sistemas embarcados, sistemas operacionais e software de baixo nível.</p></article>
+    <article class="card"><span class="badge cpp">C++</span><h3>Multiparadigma</h3><p>Suporta programação procedural, orientação a objetos, genéricos e recursos modernos da biblioteca padrão, mantendo forte controle sobre desempenho.</p></article>
+    <article class="card"><span class="badge std">Em comum</span><h3>Desempenho e proximidade</h3><p>Ambas permitem trabalhar de forma muito próxima do hardware e oferecem grande controle sobre memória e representação de dados.</p></article>
+  </div>
+</section>
+
+<section id="comparacao">
+  <div class="section-title"><div class="number">2</div><div><h2>Comparação lado a lado</h2><p class="lead">Uma visão rápida dos principais conceitos para orientar seus estudos.</p></div></div>
+  <div class="compare">
+    <table>
+      <thead><tr><th>Aspecto</th><th>C</th><th>C++</th></tr></thead>
+      <tbody>
+        <tr><td>Paradigma</td><td>Linguagem procedural/imperativa, com recursos estruturados.</td><td>Multiparadigma: procedural, orientação a objetos, genérica, funcional e outros recursos.</td></tr>
+        <tr><td>Abstração</td><td>Funções, <code>struct</code>, ponteiros e módulos.</td><td>Classes, objetos, templates, lambdas, RAII, conceitos e outros recursos.</td></tr>
+        <tr><td>Entrada/saída</td><td><code>printf</code>, <code>scanf</code>, <code>fgets</code> em <code>stdio.h</code>.</td><td><code>std::cout</code>, <code>std::cin</code> e streams em <code>iostream</code>.</td></tr>
+        <tr><td>Strings</td><td>Arrays de <code>char</code> e funções de <code>string.h</code>.</td><td><code>std::string</code> e algoritmos da biblioteca padrão.</td></tr>
+        <tr><td>Memória</td><td>Alocação dinâmica com <code>malloc</code>, <code>calloc</code>, <code>realloc</code> e <code>free</code>.</td><td>Possui <code>new/delete</code>, mas o código moderno geralmente prefere RAII, containers e smart pointers.</td></tr>
+        <tr><td>Biblioteca padrão</td><td>Inclui recursos como E/S, strings, matemática, memória, tempo e caracteres.</td><td>Possui uma biblioteca padrão própria e também disponibiliza os cabeçalhos correspondentes de grande parte da biblioteca do C.</td></tr>
+        <tr><td>Orientação a objetos</td><td>Não possui classes nativas.</td><td>Possui classes, herança, polimorfismo, encapsulamento etc.</td></tr>
+        <tr><td>Compilação típica</td><td><code>gcc -std=c11 programa.c</code></td><td><code>g++ -std=c++17 programa.cpp</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="bibliotecas">
+  <div class="section-title"><div class="number">3</div><div><h2>Bibliotecas: C puro × C++</h2><p class="lead">Muitas bibliotecas do C possuem versões/headers correspondentes no C++, além de recursos próprios da linguagem.</p></div></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="padrao">C padrão</button>
+    <button class="tab" data-tab="cppstd">C++ padrão</button>
+    <button class="tab" data-tab="sistema">Dependentes do sistema</button>
+  </div>
+
+  <div id="padrao" class="tab-panel active">
+    <div class="library-list">
+      <div class="lib"><code>stdio.h</code><small>printf, scanf, fgets</small></div>
+      <div class="lib"><code>string.h</code><small>strlen, strcpy, strcmp</small></div>
+      <div class="lib"><code>math.h</code><small>sqrt, pow, sin</small></div>
+      <div class="lib"><code>stdlib.h</code><small>malloc, free, rand, exit</small></div>
+      <div class="lib"><code>limits.h</code><small>limites de inteiros</small></div>
+      <div class="lib"><code>float.h</code><small>limites de ponto flutuante</small></div>
+      <div class="lib"><code>ctype.h</code><small>isdigit, toupper</small></div>
+      <div class="lib"><code>time.h</code><small>time, clock</small></div>
+    </div>
+  </div>
+
+  <div id="cppstd" class="tab-panel">
+    <div class="grid">
+      <div class="card"><span class="badge cpp">C++</span><h3><code>&lt;iostream&gt;</code></h3><p>Entrada e saída por streams com <code>std::cin</code> e <code>std::cout</code>.</p></div>
+      <div class="card"><span class="badge cpp">C++</span><h3><code>&lt;string&gt;</code></h3><p>Oferece <code>std::string</code>, que gerencia dinamicamente seus caracteres e evita boa parte do gerenciamento manual de arrays de <code>char</code>.</p></div>
+      <div class="card"><span class="badge cpp">C++</span><h3><code>&lt;vector&gt;</code></h3><p>Container dinâmico que gerencia automaticamente sua memória e pode ser redimensionado conforme necessário.</p></div>
+      <div class="card"><span class="badge cpp">C++</span><h3><code>&lt;algorithm&gt;</code></h3><p>Disponibiliza algoritmos genéricos, como ordenação, busca e várias operações sobre ranges e containers.</p></div>
+    </div>
+  </div>
+
+  <div id="sistema" class="tab-panel">
+    <div class="callout"><strong>⚠️ Atenção à portabilidade</strong>Headers como <code>unistd.h</code> e <code>pthread.h</code> não pertencem ao padrão ISO C e são associados principalmente a sistemas POSIX. <code>windows.h</code> é específico da API do Windows. Bibliotecas como SDL também são externas. Em C++, a situação é semelhante: bibliotecas de sistema e frameworks não fazem parte da biblioteca padrão da linguagem.</div>
+  </div>
+</section>
+
+<section id="codigo">
+  <div class="section-title"><div class="number">4</div><div><h2>O mesmo problema, duas abordagens</h2><p class="lead">Leia os exemplos e observe onde C++ adiciona abstrações sem abandonar a possibilidade de controle.</p></div></div>
+  <div class="grid">
+    <article class="card">
+      <span class="badge c">C puro</span>
+      <div class="code-wrap"><button class="copy" data-copy="code-c">Copiar</button><pre id="code-c">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main(void) {
+    char nome[50];
+
+    printf("Digite seu nome: ");
+    fgets(nome, sizeof(nome), stdin);
+
+    printf("Olá, %s", nome);
+    return 0;
+}</pre></div>
+    </article>
+    <article class="card">
+      <span class="badge cpp">C++</span>
+      <div class="code-wrap"><button class="copy" data-copy="code-cpp">Copiar</button><pre id="code-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+int main() {
+    std::string nome;
+
+    std::cout &lt;&lt; "Digite seu nome: ";
+    std::getline(std::cin, nome);
+
+    std::cout &lt;&lt; "Olá, " &lt;&lt; nome;
+    return 0;
+}</pre></div>
+    </article>
+  </div>
+</section>
+
+<section id="memoria">
+  <div class="section-title"><div class="number">5</div><div><h2>Memória e responsabilidade</h2><p class="lead">A diferença não é simplesmente “manual versus automático”: C++ oferece abstrações para tornar o gerenciamento mais seguro e expressivo.</p></div></div>
+  <div class="grid">
+    <div class="card"><span class="badge c">C</span><h3>Alocação explícita</h3><p>Funções como <code>malloc()</code> e <code>free()</code> dão controle direto. É essencial verificar retornos e liberar corretamente os recursos.</p></div>
+    <div class="card"><span class="badge cpp">C++</span><h3>RAII e recursos</h3><p>Objetos podem assumir e liberar recursos automaticamente. Containers e smart pointers reduzem a necessidade de chamadas explícitas a <code>delete</code>.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><strong>Boa prática</strong>Em C, sempre verifique o retorno de funções de alocação. Em C++, prefira abstrações da biblioteca padrão antes de recorrer ao gerenciamento manual.</div>
+</section>
+
+<section>
+  <div class="section-title"><div class="number">6</div><div><h2>Como reconhecer C puro?</h2><p class="lead">Use estes sinais como uma lista de verificação durante a leitura de um programa.</p></div></div>
+  <div class="grid-3">
+    <div class="card"><h3>✓ Headers C</h3><p><code>stdio.h</code>, <code>stdlib.h</code>, <code>string.h</code>, <code>math.h</code> etc., quando fazem parte do programa e da biblioteca padrão.</p></div>
+    <div class="card"><h3>✓ Estruturas</h3><p>Funções, <code>struct</code>, ponteiros e organização em arquivos <code>.h</code> e <code>.c</code>.</p></div>
+    <div class="card"><h3>✗ Recursos exclusivos de C++</h3><p>Para caracterizar C puro, não devem aparecer recursos como classes, templates, <code>std::cout/std::cin</code>, <code>new/delete</code> ou outras construções exclusivas de C++.</p></div>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quiz">
+    <div class="eyebrow">Teste rápido</div>
+    <h2 style="margin-top:8px">Qual afirmação está correta?</h2>
+    <p>Escolha uma alternativa para verificar seu entendimento. Apenas uma está correta.</p>
+    <div class="answers">
+      <button class="answer" data-correct="false">A) C possui classes e herança como recursos nativos.</button>
+      <button class="answer" data-correct="true">B) C++ é uma linguagem multiparadigma e possui uma biblioteca padrão própria, além de oferecer compatibilidade com muitas interfaces da biblioteca do C.</button>
+      <button class="answer" data-correct="false">C) stdio.h é uma biblioteca exclusiva de C++.</button>
+      <button class="answer" data-correct="false">D) windows.h faz parte da biblioteca padrão internacional da linguagem C.</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container footer-line">
+    <div><strong>Universidade Tecnológica Federal do Paraná.</strong><br>Professor Clayton Kossoski</div>
+    <div>Curso: Tecnologia em Análise e Desenvolvimento de Sistemas<br>Campus Cornélio Procópio</div>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.copy').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const text=document.getElementById(btn.dataset.copy).innerText;
+    try{
+      await navigator.clipboard.writeText(text);
+      const old=btn.textContent; btn.textContent='Copiado!';
+      setTimeout(()=>btn.textContent=old,1200);
+    }catch(e){ btn.textContent='Selecione e copie'; }
+  });
+});
+
+document.querySelectorAll('.answer').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const feedback=document.getElementById('feedback');
+    if(btn.dataset.correct==='true'){
+      feedback.textContent='✓ Correto! C++ adiciona recursos multiparadigma e uma biblioteca padrão ampla.';
+      feedback.style.color='#7ff0c8';
+    }else{
+      feedback.textContent='✗ Ainda não. Revise a comparação e tente novamente.';
+      feedback.style.color='#ffd08a';
+    }
+  });
+});
+</script>
+</body>
+</html>

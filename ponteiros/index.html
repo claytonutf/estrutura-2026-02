@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ponteiros em C | UTFPR</title>
+
+    <meta
+        name="description"
+        content="Material didático sobre ponteiros em linguagem C - Universidade Tecnológica Federal do Paraná"
+    >
+
+    <style>
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                Inter,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f4f7fb;
+            color: #172033;
+            line-height: 1.6;
+
+            transition:
+                background .3s ease,
+                color .3s ease;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        code {
+            font-family:
+                "Fira Code",
+                "Cascadia Code",
+                Consolas,
+                monospace;
+        }
+
+
+        /* =========================================================
+           VARIÁVEIS
+        ========================================================= */
+
+        :root {
+            --primary: #006b3f;
+            --primary-dark: #004d2c;
+            --primary-light: #e7f6ee;
+
+            --secondary: #087f5b;
+
+            --accent: #f2b134;
+
+            --text: #172033;
+            --muted: #657084;
+
+            --background: #f4f7fb;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+
+            --border: #dfe5ec;
+
+            --code: #111827;
+            --code-text: #e5e7eb;
+
+            --shadow:
+                0 10px 30px rgba(15, 23, 42, .08);
+
+            --radius: 18px;
+        }
+
+
+        /* =========================================================
+           DARK MODE
+        ========================================================= */
+
+        body.dark {
+            --background: #0c1117;
+            --surface: #121a23;
+            --surface-2: #18222e;
+
+            --text: #edf2f7;
+            --muted: #aab6c4;
+
+            --border: #273443;
+
+            --primary-light: #123d2b;
+
+            --shadow:
+                0 15px 40px rgba(0,0,0,.25);
+        }
+
+
+        /* =========================================================
+           HEADER
+        ========================================================= */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            background:
+                rgba(255,255,255,.92);
+
+            backdrop-filter: blur(16px);
+
+            border-bottom:
+                1px solid var(--border);
+        }
+
+        body.dark header {
+            background:
+                rgba(12,17,23,.92);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: auto;
+
+            min-height: 72px;
+
+            padding:
+                0 24px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            font-weight: 800;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 12px;
+
+            display: grid;
+            place-items: center;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #00a66a
+                );
+
+            font-size: 20px;
+            font-weight: 900;
+
+            box-shadow:
+                0 8px 18px rgba(0,107,63,.25);
+        }
+
+        .brand-text {
+            line-height: 1.15;
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .brand-text span {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        nav {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                color .2s ease;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            background: var(--surface);
+
+            cursor: pointer;
+
+            display: grid;
+            place-items: center;
+
+            color: var(--text);
+        }
+
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+
+            background:
+                radial-gradient(
+                    circle at 15% 20%,
+                    rgba(0,166,106,.18),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 90% 10%,
+                    rgba(242,177,52,.15),
+                    transparent 25%
+                ),
+
+                var(--surface);
+
+            border-bottom:
+                1px solid var(--border);
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: auto;
+
+            padding:
+                90px 24px
+                100px;
+
+            display: grid;
+
+            grid-template-columns:
+                1.15fr .85fr;
+
+            gap: 70px;
+
+            align-items: center;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding:
+                7px 12px;
+
+            border-radius: 999px;
+
+            background: var(--primary-light);
+            color: var(--primary);
+
+            font-size: 12px;
+            font-weight: 800;
+
+            margin-bottom: 22px;
+        }
+
+        .eyebrow::before {
+            content: "";
+
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: var(--primary);
+        }
+
+        h1 {
+            font-size:
+                clamp(42px, 6vw, 76px);
+
+            line-height: .98;
+
+            letter-spacing: -3px;
+
+            margin-bottom: 24px;
+        }
+
+        .gradient-text {
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #00a66a
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 680px;
+
+            font-size: 19px;
+
+            color: var(--muted);
+
+            margin-bottom: 30px;
+        }
+
+        .teacher {
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+
+            margin-bottom: 32px;
+        }
+
+        .teacher-icon {
+            width: 46px;
+            height: 46px;
+
+            border-radius: 50%;
+
+            background: var(--primary-light);
+
+            display: grid;
+            place-items: center;
+
+            color: var(--primary);
+
+            font-weight: 900;
+        }
+
+        .teacher strong {
+            display: block;
+        }
+
+        .teacher span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            border-radius: 12px;
+
+            padding:
+                12px 18px;
+
+            font-weight: 750;
+
+            border: 1px solid transparent;
+
+            cursor: pointer;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease,
+                background .2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+
+            box-shadow:
+                0 10px 25px rgba(0,107,63,.20);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+
+            border-color: var(--border);
+        }
+
+
+        /* =========================================================
+           MEMORY VISUAL
+        ========================================================= */
+
+        .memory-card {
+            position: relative;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #111827,
+                    #1d2939
+                );
+
+            border-radius: 26px;
+
+            padding: 28px;
+
+            color: white;
+
+            box-shadow:
+                0 25px 60px rgba(15,23,42,.25);
+
+            overflow: hidden;
+        }
+
+        .memory-card::before {
+            content: "";
+
+            position: absolute;
+
+            width: 220px;
+            height: 220px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(0,166,106,.12);
+
+            top: -90px;
+            right: -80px;
+        }
+
+        .memory-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+
+            color: #9ca3af;
+
+            margin-bottom: 22px;
+        }
+
+        .memory-row {
+            display: grid;
+
+            grid-template-columns:
+                110px 1fr 110px;
+
+            gap: 10px;
+
+            margin-bottom: 10px;
+
+            align-items: stretch;
+        }
+
+        .memory-cell {
+            padding: 14px;
+
+            border:
+                1px solid rgba(255,255,255,.10);
+
+            background:
+                rgba(255,255,255,.05);
+
+            border-radius: 10px;
+
+            font-family: monospace;
+
+            font-size: 13px;
+        }
+
+        .memory-address {
+            color: #f2b134;
+        }
+
+        .memory-value {
+            color: #7ee2b8;
+        }
+
+        .memory-label {
+            color: #aab6c4;
+        }
+
+
+        /* =========================================================
+           MAIN
+        ========================================================= */
+
+        main {
+            max-width: 1200px;
+
+            margin: auto;
+
+            padding:
+                80px 24px;
+        }
+
+        section {
+            margin-bottom: 100px;
+
+            scroll-margin-top: 100px;
+        }
+
+        .section-heading {
+            max-width: 760px;
+
+            margin-bottom: 36px;
+        }
+
+        .section-number {
+            color: var(--primary);
+
+            font-size: 12px;
+
+            font-weight: 900;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size:
+                clamp(30px, 4vw, 48px);
+
+            line-height: 1.05;
+
+            letter-spacing: -1.5px;
+
+            margin-bottom: 14px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            font-size: 17px;
+        }
+
+
+        /* =========================================================
+           CARDS
+        ========================================================= */
+
+        .grid-3 {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--surface);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: var(--radius);
+
+            padding: 26px;
+
+            box-shadow: var(--shadow);
+
+            transition:
+                transform .25s ease,
+                border-color .25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+
+            border-color:
+                rgba(0,107,63,.35);
+        }
+
+        .symbol {
+            width: 54px;
+            height: 54px;
+
+            border-radius: 14px;
+
+            background:
+                var(--primary-light);
+
+            color: var(--primary);
+
+            display: grid;
+            place-items: center;
+
+            font-family: monospace;
+
+            font-size: 24px;
+            font-weight: 900;
+
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin-bottom: 8px;
+
+            font-size: 20px;
+        }
+
+        .card p {
+            color: var(--muted);
+
+            font-size: 15px;
+        }
+
+
+        /* =========================================================
+           EXPLANATION BOX
+        ========================================================= */
+
+        .explanation {
+            display: grid;
+
+            grid-template-columns:
+                .9fr 1.1fr;
+
+            gap: 24px;
+        }
+
+        .concept-box {
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #00895a
+                );
+
+            color: white;
+
+            border-radius: 22px;
+
+            padding: 32px;
+
+            box-shadow:
+                0 20px 40px rgba(0,107,63,.20);
+        }
+
+        .concept-box h3 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .concept-box p {
+            color: rgba(255,255,255,.82);
+        }
+
+        .formula {
+            margin-top: 25px;
+
+            padding: 18px;
+
+            background:
+                rgba(0,0,0,.15);
+
+            border-radius: 12px;
+
+            font-family: monospace;
+
+            font-size: 18px;
+        }
+
+        .steps {
+            display: grid;
+
+            gap: 12px;
+        }
+
+        .step {
+            display: flex;
+
+            gap: 14px;
+
+            align-items: flex-start;
+
+            background: var(--surface);
+
+            border:
+                1px solid var(--border);
+
+            padding: 18px;
+
+            border-radius: 14px;
+        }
+
+        .step-number {
+            min-width: 32px;
+            height: 32px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 50%;
+
+            background: var(--primary);
+
+            color: white;
+
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+
+        /* =========================================================
+           CODE
+        ========================================================= */
+
+        .code-card {
+            background: var(--code);
+
+            color: var(--code-text);
+
+            border-radius: 18px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 18px 45px rgba(0,0,0,.15);
+        }
+
+        .code-header {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            padding:
+                12px 16px;
+
+            background:
+                rgba(255,255,255,.05);
+
+            border-bottom:
+                1px solid rgba(255,255,255,.08);
+        }
+
+        .dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #64748b;
+        }
+
+        .code-header span {
+            color: #94a3b8;
+
+            font-size: 12px;
+        }
+
+        .copy-btn {
+            border: 0;
+
+            background:
+                rgba(255,255,255,.08);
+
+            color: #cbd5e1;
+
+            padding:
+                6px 10px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            font-size: 11px;
+        }
+
+        pre {
+            padding: 24px;
+
+            overflow-x: auto;
+
+            font-size: 14px;
+
+            line-height: 1.75;
+        }
+
+        .keyword {
+            color: #c084fc;
+        }
+
+        .type {
+            color: #67e8f9;
+        }
+
+        .function {
+            color: #86efac;
+        }
+
+        .string {
+            color: #fde68a;
+        }
+
+        .comment {
+            color: #64748b;
+        }
+
+        .number {
+            color: #f9a8d4;
+        }
+
+
+        /* =========================================================
+           COMPARAÇÃO
+        ========================================================= */
+
+        .comparison {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 16px;
+
+            margin-top: 25px;
+        }
+
+        .comparison-item {
+            padding: 24px;
+
+            border:
+                1px solid var(--border);
+
+            background: var(--surface);
+
+            border-radius: 16px;
+
+            text-align: center;
+        }
+
+        .comparison-item .big {
+            display: block;
+
+            font-family: monospace;
+
+            font-size: 25px;
+
+            color: var(--primary);
+
+            font-weight: 900;
+
+            margin-bottom: 8px;
+        }
+
+        .comparison-item p {
+            color: var(--muted);
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================================
+           ARRAY
+        ========================================================= */
+
+        .array {
+            display: flex;
+
+            justify-content: center;
+
+            gap: 0;
+
+            margin:
+                35px 0;
+
+            overflow-x: auto;
+
+            padding-bottom: 8px;
+        }
+
+        .array-item {
+            min-width: 90px;
+
+            border:
+                1px solid var(--border);
+
+            background: var(--surface);
+
+            text-align: center;
+        }
+
+        .array-index {
+            padding: 7px;
+
+            background:
+                var(--surface-2);
+
+            color: var(--muted);
+
+            font-size: 12px;
+        }
+
+        .array-value {
+            padding: 18px 8px;
+
+            color: var(--primary);
+
+            font-family: monospace;
+
+            font-size: 20px;
+
+            font-weight: 900;
+        }
+
+
+        /* =========================================================
+           ALERTAS
+        ========================================================= */
+
+        .warning {
+            display: flex;
+
+            gap: 16px;
+
+            padding: 22px;
+
+            border-radius: 16px;
+
+            background:
+                #fff8e6;
+
+            border:
+                1px solid #f6d98b;
+
+            color: #684f12;
+        }
+
+        body.dark .warning {
+            background: #302711;
+            border-color: #655222;
+            color: #f5d980;
+        }
+
+        .warning-icon {
+            font-size: 24px;
+        }
+
+
+        /* =========================================================
+           QUIZ
+        ========================================================= */
+
+        .quiz {
+            background: var(--surface);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 22px;
+
+            padding: 32px;
+
+            box-shadow: var(--shadow);
+        }
+
+        .question {
+            font-size: 19px;
+
+            font-weight: 800;
+
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: grid;
+
+            gap: 10px;
+        }
+
+        .option {
+            width: 100%;
+
+            text-align: left;
+
+            padding: 15px;
+
+            border:
+                1px solid var(--border);
+
+            background: var(--surface-2);
+
+            color: var(--text);
+
+            border-radius: 12px;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #166534;
+        }
+
+        .option.wrong {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        body.dark .option.correct {
+            background: #14351f;
+            color: #86efac;
+        }
+
+        body.dark .option.wrong {
+            background: #3b1717;
+            color: #fca5a5;
+        }
+
+        #quiz-result {
+            margin-top: 18px;
+
+            font-weight: 700;
+
+            color: var(--primary);
+        }
+
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        footer {
+            border-top:
+                1px solid var(--border);
+
+            background: var(--surface);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+
+            margin: auto;
+
+            padding:
+                35px 24px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        .footer-title {
+            color: var(--text);
+
+            font-weight: 800;
+        }
+
+
+        /* =========================================================
+           RESPONSIVIDADE
+        ========================================================= */
+
+        @media (max-width: 900px) {
+
+            nav {
+                display: none;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+
+                padding-top: 65px;
+            }
+
+            .grid-3,
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .explanation {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            h1 {
+                letter-spacing: -2px;
+            }
+
+            .hero-content {
+                padding:
+                    55px 18px
+                    65px;
+            }
+
+            main {
+                padding:
+                    60px 18px;
+            }
+
+            section {
+                margin-bottom: 75px;
+            }
+
+            .memory-row {
+                grid-template-columns:
+                    80px 1fr 80px;
+            }
+
+            .memory-cell {
+                padding: 10px 6px;
+
+                font-size: 11px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <header>
+
+        <div class="nav">
+
+            <a href="#inicio" class="brand">
+
+                <div class="brand-logo">
+                    *
+                </div>
+
+                <div class="brand-text">
+
+                    <strong>Programação em C</strong>
+
+                    <span>UTFPR • Ponteiros</span>
+
+                </div>
+
+            </a>
+
+
+            <nav>
+
+                <a href="#conceito">
+                    Conceito
+                </a>
+
+                <a href="#operadores">
+                    Operadores
+                </a>
+
+                <a href="#funcoes">
+                    Funções
+                </a>
+
+                <a href="#arrays">
+                    Arrays
+                </a>
+
+                <a href="#quiz">
+                    Quiz
+                </a>
+
+            </nav>
+
+
+            <button
+                class="theme-btn"
+                id="themeBtn"
+                title="Alternar tema"
+            >
+                ☾
+            </button>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =========================================================
+         HERO
+    ========================================================== -->
+
+    <section class="hero" id="inicio">
+
+        <div class="hero-content">
+
+            <div>
+
+                <div class="eyebrow">
+                    Linguagem C • Aula de Estruturas de Dados
+                </div>
+
+
+                <h1>
+                    Entendendo
+                    <span class="gradient-text">
+                        Ponteiros
+                    </span>
+                    em C
+                </h1>
+
+
+                <p>
+                    Uma introdução visual e prática aos endereços de
+                    memória, ponteiros, desreferenciação, funções,
+                    arrays e aritmética de ponteiros.
+                </p>
+
+
+                <div class="teacher">
+
+                    <div class="teacher-icon">
+                        CK
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Professor Clayton Kossoski
+                        </strong>
+
+                        <span>
+                            Universidade Tecnológica Federal do Paraná
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-actions">
+
+                    <a
+                        class="btn btn-primary"
+                        href="#conceito"
+                    >
+                        Começar a aula →
+                    </a>
+
+                    <a
+                        class="btn btn-secondary"
+                        href="#codigo"
+                    >
+                        Ver código
+                    </a>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- VISUAL DA MEMÓRIA -->
+
+            <div class="memory-card">
+
+                <div class="memory-title">
+                    Visualizando a memória
+                </div>
+
+
+                <div class="memory-row">
+
+                    <div class="memory-cell memory-address">
+                        0x1000
+                    </div>
+
+                    <div class="memory-cell memory-label">
+                        numero
+                    </div>
+
+                    <div class="memory-cell memory-value">
+                        10
+                    </div>
+
+                </div>
+
+
+                <div class="memory-row">
+
+                    <div class="memory-cell memory-address">
+                        0x2000
+                    </div>
+
+                    <div class="memory-cell memory-label">
+                        ponteiro
+                    </div>
+
+                    <div class="memory-cell memory-value">
+                        0x1000
+                    </div>
+
+                </div>
+
+
+                <div style="
+                    margin-top:25px;
+                    color:#94a3b8;
+                    font-size:13px;
+                ">
+
+                    <code>
+                        ponteiro = &numero;
+                    </code>
+
+                    <br>
+
+                    <code style="color:#7ee2b8;">
+                        *ponteiro = 10;
+                    </code>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <main>
+
+
+        <!-- =====================================================
+             CONCEITO
+        ====================================================== -->
+
+        <section id="conceito">
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    01 • Conceito fundamental
+                </div>
+
+                <h2>
+                    O que é um ponteiro?
+                </h2>
+
+                <p>
+                    Uma variável normalmente armazena um valor.
+                    Um ponteiro armazena o endereço de memória
+                    de outra variável.
+                </p>
+
+            </div>
+
+
+            <div class="grid-3">
+
+                <article class="card">
+
+                    <div class="symbol">
+                        x
+                    </div>
+
+                    <h3>
+                        Variável
+                    </h3>
+
+                    <p>
+                        É uma região da memória identificada por
+                        um nome e utilizada para armazenar um valor.
+                    </p>
+
+                </article>
+
+
+                <article class="card">
+
+                    <div class="symbol">
+                        &
+                    </div>
+
+                    <h3>
+                        Endereço
+                    </h3>
+
+                    <p>
+                        O operador <code>&</code> permite obter
+                        o endereço de uma variável na memória.
+                    </p>
+
+                </article>
+
+
+                <article class="card">
+
+                    <div class="symbol">
+                        *
+                    </div>
+
+                    <h3>
+                        Ponteiro
+                    </h3>
+
+                    <p>
+                        Uma variável capaz de armazenar o endereço
+                        de outra variável.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             OPERADORES
+        ====================================================== -->
+
+        <section id="operadores">
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    02 • Os dois operadores essenciais
+                </div>
+
+                <h2>
+                    <code>&</code> e <code>*</code>
+                </h2>
+
+                <p>
+                    Eles possuem funções diferentes e
+                    complementares.
+                </p>
+
+            </div>
+
+
+            <div class="explanation">
+
+                <div class="concept-box">
+
+                    <h3>
+                        A ideia central
+                    </h3>
+
+                    <p>
+                        Pense em uma variável como uma casa.
+                        O valor é o que está dentro da casa.
+                        O endereço é o número da casa.
+                    </p>
+
+
+                    <div class="formula">
+
+                        &variavel
+
+                        <br>
+
+                        ↓
+
+                        <br>
+
+                        endereço
+
+                        <br><br>
+
+                        *ponteiro
+
+                        <br>
+
+                        ↓
+
+                        <br>
+
+                        valor apontado
+
+                    </div>
+
+                </div>
+
+
+                <div class="steps">
+
+                    <div class="step">
+
+                        <div class="step-number">
+                            1
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Criamos uma variável
+                            </strong>
+
+                            <p>
+                                <code>int numero = 10;</code>
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="step-number">
+                            2
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Obtemos seu endereço
+                            </strong>
+
+                            <p>
+                                <code>&numero</code>
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="step-number">
+                            3
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Guardamos o endereço
+                            </strong>
+
+                            <p>
+                                <code>int *p = &numero;</code>
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="step-number">
+                            4
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Acessamos o valor
+                            </strong>
+
+                            <p>
+                                <code>*p</code>
+                                representa o valor apontado.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="comparison">
+
+                <div class="comparison-item">
+
+                    <span class="big">
+                        numero
+                    </span>
+
+                    <p>
+                        Valor armazenado
+                    </p>
+
+                </div>
+
+
+                <div class="comparison-item">
+
+                    <span class="big">
+                        &numero
+                    </span>
+
+                    <p>
+                        Endereço de memória
+                    </p>
+
+                </div>
+
+
+                <div class="comparison-item">
+
+                    <span class="big">
+                        *p
+                    </span>
+
+                    <p>
+                        Valor apontado por p
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             CÓDIGO
+        ====================================================== -->
+
+        <section id="codigo">
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    03 • Primeiro programa
+                </div>
+
+                <h2>
+                    Ponteiro na prática
+                </h2>
+
+                <p>
+                    Observe como o ponteiro pode modificar
+                    diretamente o valor da variável.
+                </p>
+
+            </div>
+
+
+            <div class="code-card">
+
+                <div class="code-header">
+
+                    <div class="dots">
+
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+
+                    </div>
+
+                    <span>
+                        ponteiro.c
+                    </span>
+
+                    <button
+                        class="copy-btn"
+                        onclick="copyCode(this)"
+                    >
+                        Copiar
+                    </button>
+
+                </div>
+
+
+                <pre><code><span class="comment">// Ponteiros em C</span>
+
+<span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="keyword">int</span> <span class="function">main</span>(<span class="keyword">void</span>)
+{
+    <span class="keyword">int</span> numero = <span class="number">10</span>;
+
+    <span class="keyword">int</span> *ponteiro;
+
+    <span class="comment">// Guarda o endereco de numero</span>
+    ponteiro = &numero;
+
+    printf(<span class="string">"Valor de numero: %d\n"</span>, numero);
+
+    printf(
+        <span class="string">"Endereco de numero: %p\n"</span>,
+        (<span class="keyword">void</span> *)&numero
+    );
+
+    printf(
+        <span class="string">"Valor apontado: %d\n"</span>,
+        *ponteiro
+    );
+
+    <span class="comment">// Altera numero por meio do ponteiro</span>
+    *ponteiro = <span class="number">50</span>;
+
+    printf(
+        <span class="string">"Novo valor de numero: %d\n"</span>,
+        numero
+    );
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code></pre>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             FUNÇÕES
+        ====================================================== -->
+
+        <section id="funcoes">
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    04 • Ponteiros e funções
+                </div>
+
+                <h2>
+                    Alterando valores dentro de funções
+                </h2>
+
+                <p>
+                    Passando o endereço de uma variável para uma
+                    função, podemos modificar a variável original.
+                </p>
+
+            </div>
+
+
+            <div class="code-card">
+
+                <div class="code-header">
+
+                    <div class="dots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+
+                    <span>
+                        funcao.c
+                    </span>
+
+                    <button
+                        class="copy-btn"
+                        onclick="copyCode(this)"
+                    >
+                        Copiar
+                    </button>
+
+                </div>
+
+
+                <pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="keyword">void</span> <span class="function">alterar</span>(<span class="keyword">int</span> *p)
+{
+    *p = <span class="number">100</span>;
+}
+
+<span class="keyword">int</span> <span class="function">main</span>(<span class="keyword">void</span>)
+{
+    <span class="keyword">int</span> numero = <span class="number">10</span>;
+
+    printf(<span class="string">"Antes: %d\n"</span>, numero);
+
+    <span class="comment">// Passamos o endereco</span>
+    alterar(&numero);
+
+    printf(<span class="string">"Depois: %d\n"</span>, numero);
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code></pre>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             ARRAYS
+        ====================================================== -->
+
+        <section id="arrays">
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    05 • Ponteiros e arrays
+                </div>
+
+                <h2>
+                    Arrays e endereços consecutivos
+                </h2>
+
+                <p>
+                    O nome de um array pode ser utilizado como
+                    referência ao primeiro elemento.
+                </p>
+
+            </div>
+
+
+            <div class="array">
+
+                <div class="array-item">
+
+                    <div class="array-index">
+                        índice 0
+                    </div>
+
+                    <div class="array-value">
+                        10
+                    </div>
+
+                </div>
+
+
+                <div class="array-item">
+
+                    <div class="array-index">
+                        índice 1
+                    </div>
+
+                    <div class="array-value">
+                        20
+                    </div>
+
+                </div>
+
+
+                <div class="array-item">
+
+                    <div class="array-index">
+                        índice 2
+                    </div>
+
+                    <div class="array-value">
+                        30
+                    </div>
+
+                </div>
+
+
+                <div class="array-item">
+
+                    <div class="array-index">
+                        índice 3
+                    </div>
+
+                    <div class="array-value">
+                        40
+                    </div>
+
+                </div>
+
+
+                <div class="array-item">
+
+                    <div class="array-index">
+                        índice 4
+                    </div>
+
+                    <div class="array-value">
+                        50
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="code-card">
+
+                <div class="code-header">
+
+                    <div class="dots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+
+                    <span>
+                        array.c
+                    </span>
+
+                    <button
+                        class="copy-btn"
+                        onclick="copyCode(this)"
+                    >
+                        Copiar
+                    </button>
+
+                </div>
+
+
+                <pre><code><span class="keyword">int</span> numeros[<span class="number">5</span>] =
+    {<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>};
+
+<span class="keyword">int</span> *p = numeros;
+
+printf(<span class="string">"%d\n"</span>, *p);
+
+p++;
+
+printf(<span class="string">"%d\n"</span>, *p);</code></pre>
+
+            </div>
+
+
+            <div class="comparison">
+
+                <div class="comparison-item">
+
+                    <span class="big">
+                        numeros[0]
+                    </span>
+
+                    <p>
+                        Primeiro elemento
+                    </p>
+
+                </div>
+
+
+                <div class="comparison-item">
+
+                    <span class="big">
+                        *(numeros + 1)
+                    </span>
+
+                    <p>
+                        Segundo elemento
+                    </p>
+
+                </div>
+
+
+                <div class="comparison-item">
+
+                    <span class="big">
+                        *(p + 2)
+                    </span>
+
+                    <p>
+                        Terceiro elemento
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             ARITMÉTICA
+        ====================================================== -->
+
+        <section>
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    06 • Aritmética de ponteiros
+                </div>
+
+                <h2>
+                    O que acontece quando fazemos <code>p++</code>?
+                </h2>
+
+                <p>
+                    O ponteiro passa para o próximo elemento do
+                    tipo para o qual aponta.
+                </p>
+
+            </div>
+
+
+            <div class="explanation">
+
+                <div class="card">
+
+                    <h3>
+                        Para um array de <code>int</code>
+                    </h3>
+
+                    <br>
+
+                    <code>
+                        int *p = numeros;
+                    </code>
+
+                    <br><br>
+
+                    <code>
+                        p++;
+                    </code>
+
+                    <p style="margin-top:15px;">
+                        Agora <code>p</code> aponta para o próximo
+                        elemento do array.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>
+                        Regra importante
+                    </h3>
+
+                    <br>
+
+                    <div class="formula"
+                         style="
+                            background:var(--surface-2);
+                            color:var(--primary);
+                            border-radius:12px;
+                         ">
+
+                        p + 1
+
+                        <br>
+
+                        ↓
+
+                        <br>
+
+                        próximo elemento
+
+                    </div>
+
+                    <p style="margin-top:15px;">
+
+                        O deslocamento considera o tamanho do
+                        tipo apontado.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             NULL
+        ====================================================== -->
+
+        <section>
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    07 • Segurança
+                </div>
+
+                <h2>
+                    E se o ponteiro não apontar para nada?
+                </h2>
+
+                <p>
+                    Podemos utilizar <code>NULL</code> para indicar
+                    que o ponteiro não possui um endereço válido
+                    associado.
+                </p>
+
+            </div>
+
+
+            <div class="warning">
+
+                <div class="warning-icon">
+                    ⚠️
+                </div>
+
+                <div>
+
+                    <strong>
+                        Nunca desreferencie um ponteiro NULL.
+                    </strong>
+
+                    <p>
+                        Fazer <code>*p</code> quando <code>p</code>
+                        não aponta para uma região válida pode
+                        causar comportamento indefinido.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="code-card"
+                style="margin-top:20px;"
+            >
+
+                <pre><code><span class="keyword">int</span> *p = NULL;
+
+<span class="keyword">if</span> (p == NULL)
+{
+    printf(<span class="string">"Ponteiro nao inicializado.\n"</span>);
+}</code></pre>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             RESUMO
+        ====================================================== -->
+
+        <section>
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    08 • Para lembrar
+                </div>
+
+                <h2>
+                    Os quatro conceitos essenciais
+                </h2>
+
+            </div>
+
+
+            <div class="grid-3">
+
+                <div class="card">
+
+                    <div class="symbol">
+                        &
+                    </div>
+
+                    <h3>
+                        Endereço
+                    </h3>
+
+                    <p>
+                        Obtém o endereço de uma variável.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="symbol">
+                        *
+                    </div>
+
+                    <h3>
+                        Desreferenciação
+                    </h3>
+
+                    <p>
+                        Acessa o valor armazenado no endereço
+                        apontado.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="symbol">
+                        p++
+                    </div>
+
+                    <h3>
+                        Aritmética
+                    </h3>
+
+                    <p>
+                        Avança o ponteiro para o próximo elemento
+                        do tipo apontado.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             QUIZ
+        ====================================================== -->
+
+        <section id="quiz">
+
+            <div class="section-heading">
+
+                <div class="section-number">
+                    09 • Verifique seu entendimento
+                </div>
+
+                <h2>
+                    Quiz rápido
+                </h2>
+
+                <p>
+                    Qual será o valor de <code>x</code>?
+                </p>
+
+            </div>
+
+
+            <div class="quiz">
+
+                <div class="question">
+
+                    <code>
+                        int x = 10;<br>
+                        int *p = &x;<br>
+                        *p = 50;
+                    </code>
+
+                    <br><br>
+
+                    Qual será o valor de <code>x</code>?
+
+                </div>
+
+
+                <div class="options">
+
+                    <button
+                        class="option"
+                        onclick="answer(this, false)"
+                    >
+                        A) 10
+                    </button>
+
+                    <button
+                        class="option"
+                        onclick="answer(this, true)"
+                    >
+                        B) 50
+                    </button>
+
+                    <button
+                        class="option"
+                        onclick="answer(this, false)"
+                    >
+                        C) O endereço de memória
+                    </button>
+
+                    <button
+                        class="option"
+                        onclick="answer(this, false)"
+                    >
+                        D) 0
+                    </button>
+
+                </div>
+
+
+                <div id="quiz-result"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer>
+
+        <div class="footer-content">
+
+            <div>
+
+                <div class="footer-title">
+                    Universidade Tecnológica Federal do Paraná
+                </div>
+
+                <div>
+                    Programação em C • Ponteiros
+                </div>
+
+            </div>
+
+
+            <div>
+                Professor Clayton Kossoski
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script>
+
+        /* ========================================================
+           TEMA
+        ======================================================== */
+
+        const themeBtn =
+            document.getElementById("themeBtn");
+
+        themeBtn.addEventListener("click", () => {
+
+            document.body.classList.toggle("dark");
+
+            const dark =
+                document.body.classList.contains("dark");
+
+            themeBtn.textContent =
+                dark ? "☀" : "☾";
+
+            localStorage.setItem(
+                "pointer-theme",
+                dark ? "dark" : "light"
+            );
+
+        });
+
+
+        const savedTheme =
+            localStorage.getItem("pointer-theme");
+
+        if (savedTheme === "dark") {
+
+            document.body.classList.add("dark");
+
+            themeBtn.textContent = "☀";
+
+        }
+
+
+        /* ========================================================
+           COPIAR CÓDIGO
+        ======================================================== */
+
+        function copyCode(button) {
+
+            const code =
+                button
+                    .closest(".code-card")
+                    .querySelector("code")
+                    .innerText;
+
+            navigator.clipboard.writeText(code);
+
+            const original =
+                button.innerText;
+
+            button.innerText =
+                "✓ Copiado!";
+
+            setTimeout(() => {
+
+                button.innerText =
+                    original;
+
+            }, 1500);
+
+        }
+
+
+        /* ========================================================
+           QUIZ
+        ======================================================== */
+
+        function answer(button, correct) {
+
+            const options =
+                document.querySelectorAll(".option");
+
+            options.forEach(option => {
+
+                option.disabled = true;
+
+            });
+
+
+            const result =
+                document.getElementById("quiz-result");
+
+
+            if (correct) {
+
+                button.classList.add("correct");
+
+                result.innerHTML =
+                    "✓ Correto! *p modifica o valor armazenado no endereço de x.";
+
+            } else {
+
+                button.classList.add("wrong");
+
+                result.innerHTML =
+                    "✗ Não é essa. Como p aponta para x, *p = 50 altera diretamente x.";
+
+                options.forEach(option => {
+
+                    if (
+                        option.innerText.startsWith("B)")
+                    ) {
+
+                        option.classList.add("correct");
+
+                    }
+
+                });
+
+            }
+
+        }
+
+
+        /* ========================================================
+           REVEAL ANIMATION
+        ======================================================== */
+
+        const observer =
+            new IntersectionObserver(
+                entries => {
+
+                    entries.forEach(entry => {
+
+                        if (entry.isIntersecting) {
+
+                            entry.target.style.opacity = "1";
+
+                            entry.target.style.transform =
+                                "translateY(0)";
+
+                        }
+
+                    });
+
+                },
+                {
+                    threshold: .12
+                }
+            );
+
+
+        document
+            .querySelectorAll(".card, .code-card, .quiz")
+            .forEach(element => {
+
+                element.style.opacity = "0";
+
+                element.style.transform =
+                    "translateY(18px)";
+
+                element.style.transition =
+                    "opacity .6s ease, transform .6s ease";
+
+                observer.observe(element);
+
+            });
+
+    </script>
+
+</body>
+</html>
