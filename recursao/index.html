@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursividade em C — Estrutura de Dados</title>
+<meta name="description" content="Página didática e interativa sobre recursividade na linguagem C.">
+<style>
+:root{
+  --bg:#f6f8fc; --surface:#ffffff; --surface2:#f0f4fa; --text:#172033;
+  --muted:#5f6b7a; --primary:#2457d6; --primary2:#6b46c1; --accent:#0f9d78;
+  --danger:#c0392b; --warning:#c77d00; --border:#dfe5ef; --shadow:0 12px 35px rgba(31,45,70,.09);
+  --code:#17202b; --codeText:#e9f1ff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+color:var(--text);background:var(--bg);line-height:1.65}
+a{color:inherit}
+.container{width:min(1160px,92%);margin:auto}
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav{height:68px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{font-weight:900;display:flex;align-items:center;gap:10px;color:var(--primary)}
+.logo span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:white}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav a{text-decoration:none;padding:8px 11px;border-radius:9px;font-size:.9rem;color:var(--muted)}
+nav a:hover{background:var(--surface2);color:var(--primary)}
+.hero{padding:80px 0 55px;background:
+radial-gradient(circle at 85% 20%,rgba(107,70,193,.12),transparent 28%),
+radial-gradient(circle at 10% 10%,rgba(36,87,214,.11),transparent 28%)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:45px;align-items:center}
+.eyebrow{color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.11em;font-size:.8rem}
+h1{font-size:clamp(2.5rem,6vw,5rem);line-height:1.02;margin:12px 0 20px;letter-spacing:-.05em}
+h2{font-size:clamp(1.7rem,3vw,2.4rem);line-height:1.15;margin:0 0 12px}
+h3{margin:0 0 8px}
+.lead{font-size:1.12rem;color:var(--muted);max-width:680px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{border:0;border-radius:12px;padding:12px 17px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{filter:brightness(.94)}
+.btn-light{background:white;border:1px solid var(--border);color:var(--text)}
+.visual{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:25px;box-shadow:var(--shadow)}
+.recursive-orbit{height:270px;display:grid;place-items:center;position:relative;overflow:hidden}
+.circle{position:absolute;border:1px solid rgba(36,87,214,.22);border-radius:50%;display:grid;place-items:center}
+.c1{width:230px;height:230px}.c2{width:165px;height:165px}.c3{width:105px;height:105px;background:#eef3ff}
+.fn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;color:var(--primary)}
+section{padding:75px 0}
+.section-head{max-width:760px;margin-bottom:30px}
+.section-head p{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:23px;box-shadow:0 7px 22px rgba(31,45,70,.045)}
+.card .icon{font-size:1.7rem;margin-bottom:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:25px;box-shadow:var(--shadow)}
+.code{
+  background:var(--code);
+  color:var(--codeText);
+  padding:20px 22px;
+  border-radius:14px;
+  overflow:auto;
+  font-family:"Cascadia Code","Fira Code",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.92rem;
+  line-height:1.65;
+  tab-size:4;
+  white-space:pre;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.code-wrap{position:relative}
+.code-title{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:8px;font-size:.82rem;color:var(--muted);font-weight:800
+}
+.code-badge{
+  padding:4px 8px;border-radius:999px;background:#e9efff;color:var(--primary);
+  font-size:.76rem
+}
+.code-line{
+  display:block;
+  margin:0 -22px;
+  padding:0 22px;
+  border-left:3px solid transparent;
+}
+.code-line.active{
+  background:rgba(36,87,214,.18);
+  border-left-color:#7fb0ff;
+}
+.code-line.base{
+  background:rgba(15,157,120,.18);
+  border-left-color:#57d4ae;
+}
+.code-line.returning{
+  background:rgba(199,125,0,.17);
+  border-left-color:#ffd37a;
+}
+.kw{color:#8ec5ff}.cm{color:#8fa2b8}.str{color:#b8e986}.num{color:#ffd37a}
+.note{padding:15px 17px;border-left:4px solid var(--primary);background:#edf3ff;border-radius:9px;margin-top:16px}
+.warning{border-left-color:var(--warning);background:#fff7e7}.danger{border-left-color:var(--danger);background:#fff0ee}.success{border-left-color:var(--accent);background:#eaf8f3}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.step{padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:15px;position:relative}
+.step strong{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#e9efff;color:var(--primary);margin-bottom:10px}
+.sim{display:grid;grid-template-columns:.78fr 1.22fr;gap:20px}
+.sim-main{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sim-status{
+  min-height:46px;padding:11px 13px;border-radius:10px;background:#f0f4fa;
+  border:1px solid var(--border);font-size:.9rem;color:var(--muted)
+}
+.sim-status strong{color:var(--text)}
+.sim-actions{display:flex;gap:10px;flex-wrap:wrap}
+.step-btn{background:#fff;border:1px solid var(--primary);color:var(--primary)}
+.step-btn:hover{background:#edf3ff}
+@media(max-width:760px){.sim-main{grid-template-columns:1fr}}
+.controls{display:grid;gap:14px}
+label{font-weight:800;font-size:.9rem}
+input[type=number]{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-size:1rem;background:white}
+select{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:white}
+.stack{min-height:310px;background:#f8faff;border:1px solid var(--border);border-radius:14px;padding:15px;display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:8px}
+.frame{padding:11px 13px;background:white;border:1px solid #ccd8ef;border-left:4px solid var(--primary);border-radius:9px;animation:pop .25s ease}
+.frame.base{border-left-color:var(--accent);background:#effaf6}
+@keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.trace{font-family:ui-monospace,monospace;background:var(--code);color:var(--codeText);border-radius:12px;padding:15px;min-height:80px;white-space:pre-wrap}
+.result{font-size:1.4rem;font-weight:900;color:var(--primary);margin-top:12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.tab{border:1px solid var(--border);background:white;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}
+.tab.active{background:var(--primary);color:white;border-color:var(--primary)}
+.hidden{display:none!important}
+.compare{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+.compare th,.compare td{padding:14px;text-align:left;border-bottom:1px solid var(--border)}
+.compare th{background:#f0f4fa}
+.quiz{display:grid;gap:14px}
+.q{padding:18px;border:1px solid var(--border);border-radius:14px;background:white}
+.q label{display:block;font-weight:500;margin:7px 0;cursor:pointer}
+.q-result{margin-top:20px;font-size:1.1rem;font-weight:800}
+.timeline{position:relative;border-left:3px solid #d8e2f5;padding-left:24px;display:grid;gap:20px}
+.timeline article{position:relative}.timeline article:before{content:"";position:absolute;left:-33px;top:7px;width:13px;height:13px;background:var(--primary);border-radius:50%;border:4px solid var(--bg)}
+.exercise{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+footer{background:#111a29;color:#d9e2f1;padding:34px 0;margin-top:30px}
+footer .container{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer a{color:#a9c4ff}
+.small{font-size:.87rem;color:var(--muted)}
+
+.people{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:28px}
+.person{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.person img{width:100%;height:220px;object-fit:cover;object-position:center top;background:#e9eef6}
+.person-body{padding:18px}.person-body h3{margin-bottom:3px}.person-role{font-size:.8rem;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.person-body p{font-size:.9rem;color:var(--muted);margin:9px 0 0}.person-source{font-size:.72rem;color:#7a8492;margin-top:10px}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:25px}.fact{background:linear-gradient(135deg,#fff,#f6f8fc);border:1px solid var(--border);border-radius:16px;padding:20px}.fact .fact-icon{font-size:1.7rem}.fact h3{margin-top:7px}.fact p{margin-bottom:0;color:var(--muted)}
+.verify{display:flex;gap:10px;align-items:flex-start;padding:15px 17px;border-radius:12px;background:#eaf8f3;border:1px solid #c9ecdf;color:#245746}.verify strong{color:#146b53}.sources{display:grid;gap:8px}.sources a{color:var(--primary);text-decoration:none}.sources a:hover{text-decoration:underline}
+@media(max-width:1000px){.people{grid-template-columns:1fr 1fr}}@media(max-width:600px){.people,.facts{grid-template-columns:1fr}}
+
+@media(max-width:900px){
+ .hero-grid,.two,.sim{grid-template-columns:1fr}
+ .cards{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr 1fr}
+ nav{display:none}
+}
+@media(max-width:600px){
+ section{padding:55px 0}.hero{padding:55px 0 35px}
+ .cards,.steps,.exercise{grid-template-columns:1fr}
+ h1{font-size:2.65rem}
+ .visual{padding:17px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="logo" href="#inicio"><span>ƒ</span> Recursividade em C</a>
+    <nav>
+      <a href="#conceito">Conceito</a><a href="#estrutura">Estrutura</a><a href="#pilha">Pilha</a>
+      <a href="#exemplos">Exemplos</a><a href="#simulador">Simulador</a><a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inicio">
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">Estrutura de Dados • C</div>
+      <h1>Aprenda a pensar em <span style="color:var(--primary)">recursão.</span></h1>
+      <p class="lead">Uma função chama a si mesma para resolver versões menores do mesmo problema. O segredo está em saber <strong>quando parar</strong> e entender o que acontece na <strong>pilha de chamadas</strong>.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#simulador">▶ Explorar o simulador</a>
+        <a class="btn btn-light" href="#conceito">Começar pela teoria</a>
+      </div>
+    </div>
+    <div class="visual">
+      <div class="recursive-orbit">
+        <div class="circle c1"><span class="fn">f(n)</span></div>
+        <div class="circle c2"><span class="fn">f(n−1)</span></div>
+        <div class="circle c3"><span class="fn">base</span></div>
+      </div>
+      <p style="text-align:center;margin:0;color:var(--muted)">problema → subproblema → caso base → retorno</p>
+    </div>
+  </div>
+</section>
+
+<section id="conceito">
+<div class="container">
+  <div class="section-head">
+    <div class="eyebrow">01 · Conceito</div><h2>O que é recursividade?</h2>
+    <p>Recursão é uma técnica em que uma função chama a si mesma, direta ou indiretamente, para resolver um problema por meio de instâncias menores ou mais simples.</p>
+  </div>
+  <div class="cards">
+    <article class="card"><div class="icon">🧩</div><h3>Divida o problema</h3><p>Transforme o problema original em uma versão menor do mesmo problema.</p></article>
+    <article class="card"><div class="icon">🛑</div><h3>Defina o caso base</h3><p>É a condição de parada. Sem ela, as chamadas podem continuar indefinidamente.</p></article>
+    <article class="card"><div class="icon">↩️</div><h3>Deixe a pilha trabalhar</h3><p>As chamadas são empilhadas. Ao chegar ao caso base, os resultados retornam na ordem inversa.</p></article>
+  </div>
+  <div class="note success"><strong>Analogia:</strong> pense em dois espelhos frente a frente: cada imagem parece gerar outra. Em um algoritmo recursivo, porém, precisamos de uma condição que interrompa o processo.</div>
+</div>
+</section>
+
+<section id="estrutura" style="background:#eef3fa">
+<div class="container">
+  <div class="section-head"><div class="eyebrow">02 · Anatomia</div><h2>As duas partes essenciais</h2><p>Uma função recursiva bem formada possui uma condição de parada e uma chamada que aproxima o problema do caso base.</p></div>
+  <div class="steps">
+    <div class="step"><strong>1</strong><h3>Caso base</h3><p>A solução mais simples, conhecida diretamente.</p></div>
+    <div class="step"><strong>2</strong><h3>Caso recursivo</h3><p>A função chama a si mesma com uma entrada menor ou mais simples.</p></div>
+    <div class="step"><strong>3</strong><h3>Progresso</h3><p>Cada chamada deve caminhar em direção ao caso base.</p></div>
+    <div class="step"><strong>4</strong><h3>Retorno</h3><p>Depois do caso base, as chamadas são resolvidas de trás para frente.</p></div>
+  </div>
+  <div class="two" style="margin-top:22px">
+    <div class="panel">
+      <h3>Modelo mental</h3>
+      <div class="code"><span class="kw">tipo</span> funcao(<span class="kw">entrada</span>) {
+  <span class="kw">se</span> (caso_base)
+      <span class="kw">retorne</span> solução;
+
+  <span class="kw">retorne</span> funcao(entrada_menor);
+}</div>
+    </div>
+    <div class="panel">
+      <h3>Checklist antes de executar</h3>
+      <ul>
+        <li>Qual é o caso base?</li><li>A entrada realmente se aproxima dele?</li>
+        <li>O que cada chamada precisa retornar?</li><li>Quantas chamadas ficam simultaneamente na pilha?</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="pilha">
+<div class="container">
+  <div class="section-head"><div class="eyebrow">03 · Call Stack</div><h2>A pilha de chamadas</h2><p>Cada chamada de função cria um novo quadro (stack frame), contendo informações necessárias para continuar a execução. Quando o caso base é atingido, a pilha começa a ser desempilhada.</p></div>
+  <div class="two">
+    <div class="panel">
+      <h3>Descendo ↘</h3>
+      <p>As chamadas se acumulam:</p>
+      <div class="trace">f(5)
+  └─ f(4)
+      └─ f(3)
+          └─ f(2)
+              └─ f(1)  ← caso base</div>
+      <h3 style="margin-top:18px">Subindo ↗</h3>
+      <p>Depois do caso base, cada chamada retoma e retorna seu resultado:</p>
+      <div class="trace">f(1) → resultado
+  ↑ f(2)
+  ↑ f(3)
+  ↑ f(4)
+  ↑ f(5)</div>
+    </div>
+    <div class="panel">
+      <h3>Por que isso importa?</h3>
+      <p>A recursão consome espaço na pilha. Quanto mais profunda a recursão, mais quadros ficam ativos simultaneamente.</p>
+      <div class="note warning"><strong>Stack overflow:</strong> pode ocorrer quando a recursão não termina ou quando a profundidade ultrapassa o espaço disponível para a pilha.</div>
+      <div class="note danger"><strong>Armadilha clássica:</strong> criar um caso base que nunca será alcançado. Ex.: começar em 10 e testar uma condição que exige chegar a 100 por decrementos.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="exemplos" style="background:#eef3fa">
+<div class="container">
+  <div class="section-head"><div class="eyebrow">04 · Exemplos em C</div><h2>Recursividade na prática</h2></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="fat">Fatorial</button>
+    <button class="tab" data-tab="fib">Fibonacci</button>
+    <button class="tab" data-tab="cont">Contagem</button>
+    <button class="tab" data-tab="soma">Soma</button>
+  </div>
+  <div id="fat" class="panel tab-content">
+    <div class="two"><div><h3>Fatorial</h3><p>Matematicamente: <strong>n! = n × (n−1)!</strong>, com <strong>0! = 1</strong>.</p>
+    <div class="code"><span class="kw">int</span> fatorial(<span class="kw">int</span> n)
+{
+    <span class="kw">if</span> (n == <span class="num">0</span>)
+    {
+        <span class="kw">return</span> <span class="num">1</span>;
+    }
+
+    <span class="kw">return</span> n * fatorial(n - <span class="num">1</span>);
+}</div></div>
+    <div class="note"><strong>Exemplo:</strong><br>5! = 5 × 4 × 3 × 2 × 1 = <strong>120</strong><br><br>As chamadas descem até fatorial(0) e depois retornam.</div></div>
+  </div>
+  <div id="fib" class="panel tab-content hidden">
+    <h3>Fibonacci</h3><p>A sequência começa com <strong>fib(0)=0</strong> e <strong>fib(1)=1</strong>; para n ≥ 2, <strong>fib(n)=fib(n−1)+fib(n−2)</strong>.</p>
+    <div class="code"><span class="kw">int</span> fib(<span class="kw">int</span> n)
+{
+    <span class="kw">if</span> (n == <span class="num">0</span>)
+    {
+        <span class="kw">return</span> <span class="num">0</span>;
+    }
+
+    <span class="kw">if</span> (n == <span class="num">1</span>)
+    {
+        <span class="kw">return</span> <span class="num">1</span>;
+    }
+
+    <span class="kw">return</span> fib(n - <span class="num">1</span>) + fib(n - <span class="num">2</span>);
+}</div>
+    <div class="note warning"><strong>Observe:</strong> a versão recursiva ingênua repete muitos cálculos. É um ótimo exemplo para discutir custo computacional e memoização.</div>
+  </div>
+  <div id="cont" class="panel tab-content hidden">
+    <h3>Contagem regressiva</h3><div class="code"><span class="kw">void</span> contagem(<span class="kw">int</span> n)
+{
+    <span class="kw">if</span> (n &lt;= <span class="num">0</span>)
+    {
+        <span class="kw">return</span>;
+    }
+
+    printf(<span class="str">"%d\n"</span>, n);
+    contagem(n - <span class="num">1</span>);
+}</div>
+    <p>O caso base é alcançado quando n chega a 0. É um exemplo simples para visualizar a profundidade da pilha.</p>
+  </div>
+  <div id="soma" class="panel tab-content hidden">
+    <h3>Soma dos primeiros n naturais</h3><div class="code"><span class="kw">int</span> soma(<span class="kw">int</span> n)
+{
+    <span class="kw">if</span> (n == <span class="num">1</span>)
+    {
+        <span class="kw">return</span> <span class="num">1</span>;
+    }
+
+    <span class="kw">return</span> n + soma(n - <span class="num">1</span>);
+}</div>
+    <p>Para n = 5: 5 + 4 + 3 + 2 + 1 = <strong>15</strong>.</p>
+  </div>
+</div>
+</section>
+
+<section id="simulador">
+<div class="container">
+  <div class="section-head">
+    <div class="eyebrow">05 · Laboratório</div>
+    <h2>Simulador interativo da recursão</h2>
+    <p>Escolha um algoritmo e acompanhe, simultaneamente, o código em C, a linha executada e o crescimento da pilha de chamadas.</p>
+  </div>
+
+  <div class="panel sim">
+    <div class="controls">
+      <div>
+        <label for="algo">Função</label>
+        <select id="algo">
+          <option value="fat">Fatorial</option>
+          <option value="sum">Soma de 1 até n</option>
+          <option value="count">Contagem regressiva</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="n">Valor de n (1–10)</label>
+        <input id="n" type="number" min="1" max="10" value="5">
+      </div>
+
+      <div class="sim-actions">
+        <button class="btn btn-primary" id="prepare">Preparar simulação</button>
+        <button class="btn step-btn" id="nextStep">⏭ Próximo passo</button>
+        <button class="btn btn-light" id="autoRun">▶ Executar automaticamente</button>
+        <button class="btn btn-light" id="clear">Limpar</button>
+      </div>
+
+      <div id="simStatus" class="sim-status">
+        Escolha os parâmetros e clique em <strong>Preparar simulação</strong>.
+      </div>
+
+      <div id="simResult" class="result"></div>
+
+      <p class="small">
+        Cada clique em <strong>Próximo passo</strong> avança exatamente uma etapa da execução.
+      </p>
+    </div>
+
+    <div class="sim-main">
+      <div>
+        <div class="code-title">
+          <span>Código executado</span>
+          <span class="code-badge">C</span>
+        </div>
+        <div id="simCode" class="code"></div>
+      </div>
+
+      <div>
+        <h3>Pilha de chamadas</h3>
+        <div id="stack" class="stack">
+          <div class="small">A pilha aparecerá aqui durante a execução.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-head"><div class="eyebrow">06 · Quando usar?</div><h2>Recursão ou iteração?</h2></div>
+  <table class="compare">
+    <thead><tr><th>Recursão</th><th>Iteração (laços)</th></tr></thead>
+    <tbody>
+      <tr><td>Pode deixar estruturas hierárquicas mais naturais de expressar.</td><td>Frequentemente usa menos espaço extra de pilha.</td></tr>
+      <tr><td>É útil em árvores, grafos, divide and conquer e backtracking.</td><td>É adequada quando o problema é naturalmente sequencial.</td></tr>
+      <tr><td>Cada chamada acrescenta um quadro à pilha.</td><td>Um laço pode evitar múltiplos quadros de chamada.</td></tr>
+      <tr><td>Exige atenção especial ao caso base e à profundidade.</td><td>Exige atenção à condição de parada e atualização das variáveis.</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>Regra prática:</strong> não use recursão apenas porque é possível. Use-a quando ela tornar a solução mais clara ou quando a estrutura do problema for naturalmente recursiva.</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-head"><div class="eyebrow">07 · Aplicações</div><h2>Onde a recursividade aparece?</h2></div>
+  <div class="cards">
+    <article class="card"><div class="icon">🌳</div><h3>Árvores</h3><p>Percursos em árvores binárias e árvores de decisão são exemplos naturais.</p></article>
+    <article class="card"><div class="icon">🕸️</div><h3>Grafos</h3><p>DFS (busca em profundidade) pode ser implementada recursivamente ou com uma pilha explícita.</p></article>
+    <article class="card"><div class="icon">⚡</div><h3>Divide and Conquer</h3><p>Merge Sort, Quick Sort e implementações recursivas de busca binária são exemplos clássicos de divisão em subproblemas.</p></article>
+    <article class="card"><div class="icon">🧩</div><h3>Backtracking</h3><p>Permutações, combinações, labirintos e outros problemas de busca de possibilidades.</p></article>
+    <article class="card"><div class="icon">🌀</div><h3>Fractais</h3><p>Recorrências e regras repetidas podem gerar padrões fractais. O conjunto de Mandelbrot, especificamente, é definido por uma iteração matemática, não deve ser apresentado simplesmente como um “exemplo de recursão”.</p></article>
+    <article class="card"><div class="icon">💾</div><h3>Memoização</h3><p>Resultados de subproblemas podem ser armazenados para evitar recomputações.</p></article>
+  </div>
+</div>
+</section>
+
+<section style="background:#eef3fa">
+<div class="container">
+  <div class="section-head"><div class="eyebrow">08 · História e pessoas</div><h2>Da matemática aos algoritmos</h2><p>A ideia de definir objetos e funções por meio de versões menores de si mesmos é anterior aos computadores. No século XX, ela ganhou uma formulação rigorosa na lógica e tornou-se uma técnica prática de programação.</p></div>
+  <div class="timeline">
+    <article><strong>Antes dos computadores</strong><p>Definições recursivas já eram usadas na matemática. O fatorial, por exemplo, pode ser definido por n! = n × (n−1)!, com 0! = 1.</p></article>
+    <article><strong>Década de 1930</strong><p>Kurt Gödel trabalhou com funções recursivas na lógica. Alonzo Church desenvolveu o cálculo lambda e publicou resultados fundamentais sobre computabilidade. Alan Turing apresentou seu modelo de computação em 1936–1937.</p></article>
+    <article><strong>1958–1960</strong><p>John McCarthy desenvolveu LISP em 1958. Seu artigo de 1960 sobre “Recursive Functions of Symbolic Expressions” ajudou a estabelecer as bases teóricas da linguagem.</p></article>
+    <article><strong>Décadas de 1960–1980</strong><p>Recursão tornou-se especialmente importante em algoritmos de divisão e conquista e no processamento de estruturas hierárquicas, como árvores.</p></article>
+    <article><strong>Hoje</strong><p>A técnica continua presente em percursos de árvores e grafos, backtracking, divide and conquer, compiladores, linguagens funcionais e diversas técnicas algorítmicas.</p></article>
+  </div>
+  <div class="people">
+    <article class="person"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Kurt%20G%C3%B6del.png?width=700" alt="Retrato de Kurt Gödel" loading="lazy"><div class="person-body"><div class="person-role">Lógica matemática</div><h3>Kurt Gödel</h3><p>Trabalhou com funções recursivas e teve papel central na lógica matemática do século XX.</p><div class="person-source">Imagem: Wikimedia Commons · CC BY 4.0</div></div></article>
+    <article class="person"><img src="https://plato.stanford.edu/entries/church/alonzo-church.png" alt="Alonzo Church diante de um quadro" loading="lazy"><div class="person-body"><div class="person-role">Cálculo lambda</div><h3>Alonzo Church</h3><p>Desenvolveu o cálculo lambda e formulou, em 1936, a tese associada à noção de computabilidade efetiva.</p><div class="person-source">Imagem: Stanford Encyclopedia of Philosophy</div></div></article>
+    <article class="person"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Alan%20Turing%20%281951%29.jpg?width=700" alt="Retrato de Alan Turing" loading="lazy"><div class="person-body"><div class="person-role">Teoria da computação</div><h3>Alan Turing</h3><p>Seu trabalho de 1936–1937 sobre números computáveis tornou-se um dos fundamentos da ciência da computação.</p><div class="person-source">Imagem: Elliott & Fry · Wikimedia Commons</div></div></article>
+    <article class="person"><img src="https://legacy.cs.stanford.edu/sites/default/files/j_mccarthy_0.jpg" alt="John McCarthy em seu laboratório" loading="lazy"><div class="person-body"><div class="person-role">LISP e inteligência artificial</div><h3>John McCarthy</h3><p>Criou LISP em 1958 e teve papel fundador na inteligência artificial.</p><div class="person-source">Imagem: Stanford University</div></div></article>
+  </div>
+  <div class="facts">
+    <article class="fact"><div class="fact-icon">💡</div><h3>Curiosidade: por que LISP?</h3><p>Em uma entrevista de história oral, McCarthy explicou que, ao trabalhar com diferenciação simbólica, a recursão surgiu naturalmente e o FORTRAN da época não permitia o tipo de recursão de que ele precisava. Isso ajudou a motivar a criação de uma nova linguagem.</p></article>
+    <article class="fact"><div class="fact-icon">🎓</div><h3>Church e Turing</h3><p>Alan Turing esteve em Princeton como estudante visitante e realizou seu doutorado sob orientação de Alonzo Church. Os trabalhos dos dois ajudaram a consolidar diferentes modelos de computabilidade.</p></article>
+    <article class="fact"><div class="fact-icon">🤖</div><h3>McCarthy também criou o termo “IA”</h3><p>McCarthy é associado à introdução do termo <em>artificial intelligence</em> em 1955 e foi uma das figuras fundadoras da área.</p></article>
+    <article class="fact"><div class="fact-icon">🧠</div><h3>“Recursivo” tem dois contextos</h3><p>Na matemática e na teoria da computação, “função recursiva” possui um significado técnico próprio. Na programação, “função recursiva” normalmente significa uma função que chama a si mesma, direta ou indiretamente.</p></article>
+  </div>
+</div>
+</section>
+
+<section id="quiz">
+<div class="container">
+  <div class="section-head"><div class="eyebrow">09 · Desafio</div><h2>Teste seu entendimento</h2><p>Responda e descubra se você já domina os fundamentos.</p></div>
+  <form id="quizForm" class="quiz">
+    <div class="q"><strong>1. Qual é a função do caso base?</strong>
+      <label><input type="radio" name="q1" value="a"> Aumentar a profundidade da recursão.</label>
+      <label><input type="radio" name="q1" value="b"> Encerrar a sequência de chamadas.</label>
+      <label><input type="radio" name="q1" value="c"> Criar uma nova função.</label></div>
+    <div class="q"><strong>2. O que acontece quando uma chamada recursiva é realizada?</strong>
+      <label><input type="radio" name="q2" value="a"> Um novo quadro de chamada é criado na pilha.</label>
+      <label><input type="radio" name="q2" value="b"> A pilha é apagada.</label>
+      <label><input type="radio" name="q2" value="c"> O programa obrigatoriamente termina.</label></div>
+    <div class="q"><strong>3. Qual situação pode levar a stack overflow?</strong>
+      <label><input type="radio" name="q3" value="a"> Atingir corretamente o caso base.</label>
+      <label><input type="radio" name="q3" value="b"> Ter uma recursão que não termina ou é profunda demais.</label>
+      <label><input type="radio" name="q3" value="c"> Usar printf.</label></div>
+    <div class="q"><strong>4. Qual é uma aplicação clássica de recursão?</strong>
+      <label><input type="radio" name="q4" value="a"> Percurso de árvores.</label>
+      <label><input type="radio" name="q4" value="b"> Apenas entrada e saída.</label>
+      <label><input type="radio" name="q4" value="c"> Somente operações aritméticas.</label></div>
+    <button type="button" class="btn btn-primary" id="checkQuiz">Corrigir quiz</button>
+  </form>
+  <div id="quizResult" class="q-result"></div>
+</div>
+</section>
+
+
+<section>
+<div class="container">
+  <div class="section-head"><div class="eyebrow">11 · Próximos desafios</div><h2>Agora é sua vez</h2><p>Depois de dominar os exemplos básicos, implemente outros algoritmos clássicos de recursividade.</p></div>
+  <div class="exercise">
+    <div class="card"><h3>🗼 Torre de Hanói</h3><p>Modele os movimentos entre três hastes e observe como o problema se divide em subproblemas.</p></div>
+    <div class="card"><h3>🔀 Permutações</h3><p>Gere todas as permutações de um conjunto de elementos usando recursão e backtracking.</p></div>
+  </div>
+</div>
+</section>
+</main>
+
+<footer>
+  <div class="container">
+    <div><strong>Estrutura de Dados — Recursividade em C</strong><br><span class="small" style="color:#aebbd0">Material didático interativo</span></div>
+    <div>Prof Clayton Kossoski. Universidade Tecnológica Federal do Paraná.</div>
+  </div>
+</footer>
+
+<script>
+const tabs=document.querySelectorAll('.tab');
+tabs.forEach(btn=>btn.addEventListener('click',()=>{
+  tabs.forEach(x=>x.classList.remove('active')); btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(x=>x.classList.add('hidden'));
+  document.getElementById(btn.dataset.tab).classList.remove('hidden');
+}));
+
+
+const stack=document.getElementById('stack');
+const result=document.getElementById('simResult');
+const statusBox=document.getElementById('simStatus');
+const codeBox=document.getElementById('simCode');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+const programs = {
+  fat: {
+    name:'fatorial',
+    lines:[
+      'int fatorial(int n) {',
+      '    if (n == 0)',
+      '        return 1;',
+      '',
+      '    return n * fatorial(n - 1);',
+      '}'
+    ]
+  },
+  sum: {
+    name:'soma',
+    lines:[
+      'int soma(int n) {',
+      '    if (n == 1)',
+      '        return 1;',
+      '',
+      '    return n + soma(n - 1);',
+      '}'
+    ]
+  },
+  count: {
+    name:'contagem',
+    lines:[
+      'void contagem(int n) {',
+      '    if (n <= 0)',
+      '        return;',
+      '',
+      '    printf("%d\\n", n);',
+      '    contagem(n - 1);',
+      '}'
+    ]
+  }
+};
+
+let simState = {steps:[], index:0, algo:'fat', n:5, result:null, prepared:false, running:false};
+
+function escapeHtml(s){
+  return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
+function renderCode(activeLine=null, kind='active'){
+  const p=programs[simState.algo];
+  codeBox.innerHTML = p.lines.map((line,i)=>{
+    const cls = i===activeLine ? `code-line ${kind}` : 'code-line';
+    return `<span class="${cls}">${escapeHtml(line || ' ')}</span>`;
+  }).join('');
+}
+
+function clearHighlights(){ renderCode(null); }
+
+function buildSteps(algo,n){
+  const steps=[];
+  if(algo==='fat'){
+    function rec(v){
+      steps.push({type:'call', value:v, line:0, text:`Chamada fatorial(${v}) criada.`});
+      steps.push({type:'check', value:v, line:1, text:`Testando o caso base: n == 0.`});
+      if(v===0){
+        steps.push({type:'base', value:v, line:2, text:`Caso base atingido. fatorial(0) retorna 1.`});
+        return 1;
+      }
+      steps.push({type:'recurse', value:v, line:4, text:`Como n ≠ 0, calculamos ${v} × fatorial(${v-1}).`});
+      const sub=rec(v-1);
+      const val=v*sub;
+      steps.push({type:'return', value:v, line:4, result:val, text:`Retorno: ${v} × ${sub} = ${val}.`});
+      return val;
+    }
+    const final=rec(n); return {steps, final};
+  }
+
+  if(algo==='sum'){
+    function rec(v){
+      steps.push({type:'call', value:v, line:0, text:`Chamada soma(${v}) criada.`});
+      steps.push({type:'check', value:v, line:1, text:`Testando o caso base: n == 1.`});
+      if(v===1){
+        steps.push({type:'base', value:v, line:2, text:`Caso base atingido. soma(1) retorna 1.`});
+        return 1;
+      }
+      steps.push({type:'recurse', value:v, line:4, text:`Calculamos ${v} + soma(${v-1}).`});
+      const sub=rec(v-1);
+      const val=v+sub;
+      steps.push({type:'return', value:v, line:4, result:val, text:`Retorno: ${v} + ${sub} = ${val}.`});
+      return val;
+    }
+    const final=rec(n); return {steps, final};
+  }
+
+  function recCount(v){
+    steps.push({type:'call', value:v, line:0, text:`Chamada contagem(${v}) criada.`});
+    steps.push({type:'check', value:v, line:1, text:`Testando: n <= 0.`});
+    if(v<=0){
+      steps.push({type:'base', value:v, line:2, text:`Caso base atingido. A função retorna.`});
+      return;
+    }
+    steps.push({type:'print', value:v, line:4, text:`printf imprime ${v}.`});
+    steps.push({type:'recurse', value:v, line:5, text:`A função chama contagem(${v-1}).`});
+    recCount(v-1);
+    steps.push({type:'return', value:v, line:5, text:`contagem(${v}) é retomada e termina.`});
+  }
+  recCount(n); return {steps, final:`${n} → 1`};
+}
+
+function prepareSimulation(){
+  const algo=document.getElementById('algo').value;
+  const n=Math.max(1,Math.min(10,parseInt(document.getElementById('n').value)||5));
+  document.getElementById('n').value=n;
+  const built=buildSteps(algo,n);
+
+  simState={steps:built.steps,index:0,algo,n,result:built.final,prepared:true,running:false};
+  stack.innerHTML='';
+  result.textContent='';
+  statusBox.innerHTML='Simulação preparada. Clique em <strong>Próximo passo</strong>.';
+  renderCode(null);
+}
+
+function addFrame(v,isBase=false){
+  const p=programs[simState.algo];
+  const div=document.createElement('div');
+  div.className='frame '+(isBase?'base':'');
+  div.dataset.value=v;
+  div.innerHTML=`<strong>${p.name}(${v})</strong>${isBase?' <span>← caso base</span>':''}`;
+  stack.prepend(div);
+}
+
+function markBaseFrame(v){
+  const frame=[...stack.querySelectorAll('.frame')].find(f=>f.dataset.value==String(v));
+  if(frame){frame.classList.add('base'); frame.innerHTML += ' <span>← caso base</span>';}
+}
+
+function removeFrame(v){
+  const frame=[...stack.querySelectorAll('.frame')].find(f=>f.dataset.value==String(v));
+  if(frame) frame.remove();
+}
+
+function stepOnce(){
+  if(!simState.prepared) prepareSimulation();
+  if(simState.index>=simState.steps.length){
+    statusBox.innerHTML='<strong>Execução concluída.</strong>';
+    return false;
+  }
+
+  const s=simState.steps[simState.index++];
+  const highlightKind=s.type==='base'?'base':s.type==='return'?'returning':'active';
+  renderCode(s.line,highlightKind);
+  statusBox.innerHTML=`<strong>Passo ${simState.index}/${simState.steps.length}:</strong> ${s.text}`;
+
+  if(s.type==='call') addFrame(s.value);
+  if(s.type==='base') markBaseFrame(s.value);
+  if(s.type==='return') removeFrame(s.value);
+
+  if(simState.index>=simState.steps.length){
+    result.textContent=simState.algo==='count'
+      ? `Saída produzida: ${simState.result}`
+      : `Resultado final: ${simState.result}`;
+  }
+  return true;
+}
+
+async function autoRun(){
+  if(simState.running) return;
+  if(!simState.prepared || simState.index>=simState.steps.length) prepareSimulation();
+
+  simState.running=true;
+  while(simState.index<simState.steps.length){
+    stepOnce();
+    await sleep(520);
+  }
+  simState.running=false;
+}
+
+document.getElementById('prepare').addEventListener('click',prepareSimulation);
+document.getElementById('nextStep').addEventListener('click',stepOnce);
+document.getElementById('autoRun').addEventListener('click',autoRun);
+document.getElementById('clear').addEventListener('click',()=>{
+  simState={steps:[],index:0,algo:document.getElementById('algo').value,n:5,result:null,prepared:false,running:false};
+  stack.innerHTML='<div class="small">A pilha aparecerá aqui durante a execução.</div>';
+  result.textContent='';
+  statusBox.innerHTML='Escolha os parâmetros e clique em <strong>Preparar simulação</strong>.';
+  simState.algo=document.getElementById('algo').value;
+  renderCode(null);
+});
+
+document.getElementById('algo').addEventListener('change',()=>{
+  simState.algo=document.getElementById('algo').value;
+  simState.prepared=false;
+  renderCode(null);
+  stack.innerHTML='<div class="small">A pilha aparecerá aqui durante a execução.</div>';
+  statusBox.innerHTML='Algoritmo alterado. Clique em <strong>Preparar simulação</strong>.';
+  result.textContent='';
+});
+
+simState.algo=document.getElementById('algo').value;
+renderCode(null);
+
+document.getElementById('checkQuiz').addEventListener('click',()=>{
+ const answers={q1:'b',q2:'a',q3:'b',q4:'a'};let score=0;
+ Object.entries(answers).forEach(([q,a])=>{if(document.querySelector(`input[name="${q}"]:checked`)?.value===a)score++});
+ const el=document.getElementById('quizResult');
+ const msg=score===4?'🏆 Excelente! Você domina os fundamentos.':score>=3?'👏 Muito bem! Revise apenas os pontos que errou.':score>=2?'📘 Bom começo. Volte à seção da pilha e do caso base.':'🔎 Vale uma revisão: comece pelo conceito e pela estrutura de uma função recursiva.';
+ el.textContent=`Você acertou ${score}/4. ${msg}`;
+});
+</script>
+</body>
+</html>
