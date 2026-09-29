@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lista Encadeada em C — UTFPR</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&amp;family=Outfit:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #f5f7fa;
+    --bg2:       #ffffff;
+    --bg3:       #eef1f6;
+    --green:     #0a7c3e;
+    --green-lt:  #d1f0e0;
+    --cyan:      #0369a1;
+    --cyan-lt:   #dbeafe;
+    --purple:    #6d28d9;
+    --purple-lt: #ede9fe;
+    --orange:    #b45309;
+    --orange-lt: #fef3c7;
+    --red:       #b91c1c;
+    --red-lt:    #fee2e2;
+    --yellow:    #854d0e;
+    --text:      #1e293b;
+    --muted:     #64748b;
+    --border:    #cbd5e1;
+    --card:      #ffffff;
+    --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* subtle dot grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, rgba(100,116,139,.18) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(245,247,250,.92);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 12px 0;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+  .nav-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    color: var(--green);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 20px; }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .74rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: .04em;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 600px) { .nav-links { display: none; } }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 100px 24px 60px;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(10,124,62,.07) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    pointer-events: none;
+  }
+
+  .institution-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    gap: 2px;
+    position: relative; z-index: 1;
+  }
+  .institution-badge .inst-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .institution-badge .prof-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    color: var(--muted);
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--green-lt);
+    border: 1px solid rgba(10,124,62,.3);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .74rem;
+    padding: 5px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    letter-spacing: .1em;
+    position: relative; z-index: 1;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5.5vw, 4.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 18px;
+    color: var(--text);
+    position: relative; z-index: 1;
+  }
+  .hero h1 span { color: var(--green); }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 540px;
+    position: relative; z-index: 1;
+  }
+
+  .scroll-hint {
+    position: absolute; bottom: 36px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted); font-size: .75rem; font-family: 'JetBrains Mono', monospace;
+  }
+  .scroll-hint::after {
+    content: '';
+    display: block; width: 2px; height: 36px;
+    background: linear-gradient(var(--green), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 1100px; margin: 0 auto; padding: 0 24px;
+    position: relative; z-index: 1;
+  }
+  section { padding: 72px 0; position: relative; z-index: 1; }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    color: var(--green);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  section h2 {
+    font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+    font-weight: 800;
+    margin-bottom: 14px;
+    line-height: 1.15;
+  }
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+    max-width: 660px;
+    margin-bottom: 40px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: border-color .3s, transform .3s, box-shadow .3s;
+  }
+  .card:hover {
+    border-color: rgba(10,124,62,.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(10,124,62,.08);
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+    margin-top: 36px;
+  }
+  .card h3 {
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+    color: var(--text);
+  }
+  .card p { color: var(--muted); font-size: .93rem; }
+
+  .icon {
+    width: 34px; height: 34px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+  }
+  .icon-green  { background: var(--green-lt);  }
+  .icon-cyan   { background: var(--cyan-lt);   }
+  .icon-purple { background: var(--purple-lt); }
+  .icon-orange { background: var(--orange-lt); }
+  .icon-red    { background: var(--red-lt);    }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 22px 0;
+    box-shadow: var(--shadow);
+  }
+  .code-header {
+    background: #0f172a;
+    padding: 10px 18px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid #334155;
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .code-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .76rem;
+    color: #64748b;
+    margin-left: 6px;
+  }
+  pre {
+    padding: 22px; overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem; line-height: 1.85;
+    color: #e2e8f0;
+  }
+  .kw  { color: #c084fc; }
+  .ty  { color: #67e8f9; }
+  .fn  { color: #4ade80; }
+  .cm  { color: #4b5563; font-style: italic; }
+  .st  { color: #fde68a; }
+  .nm  { color: #fb923c; }
+  .op  { color: #fca5a5; }
+
+  /* ── DIAGRAM ── */
+  .diagram-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 20px;
+    margin: 28px 0;
+    overflow-x: auto;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .diagram-box figcaption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .74rem;
+    color: var(--muted);
+    margin-top: 14px;
+  }
+  svg text { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── STEPS ── */
+  .steps { counter-reset: step; display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
+  .step {
+    display: flex; gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    align-items: flex-start;
+    box-shadow: var(--shadow);
+    transition: border-color .3s;
+  }
+  .step:hover { border-color: rgba(3,105,161,.4); }
+  .step-num {
+    background: var(--green-lt);
+    border: 1px solid rgba(10,124,62,.3);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .85rem; font-weight: 700;
+    min-width: 36px; height: 36px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-content h4 { font-size: .97rem; margin-bottom: 5px; color: var(--text); }
+  .step-content p  { color: var(--muted); font-size: .91rem; }
+
+  /* ── TWO COL ── */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px; align-items: start;
+  }
+  @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight-box {
+    border-left: 3px solid var(--green);
+    background: var(--green-lt);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: .93rem;
+    color: #1e3a2b;
+  }
+  .highlight-box strong { color: var(--green); }
+  .highlight-box.warn  { border-left-color: var(--orange); background: var(--orange-lt); color: #431407; }
+  .highlight-box.warn strong { color: var(--orange); }
+  .highlight-box.info  { border-left-color: var(--cyan); background: var(--cyan-lt); color: #0c2740; }
+  .highlight-box.info strong { color: var(--cyan); }
+
+  /* ── TABLE ── */
+  .ops-table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+  .ops-table th, .ops-table td {
+    padding: 13px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: .92rem;
+  }
+  .ops-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .74rem; color: var(--green);
+    letter-spacing: .08em; text-transform: uppercase;
+    background: var(--bg3);
+  }
+  .ops-table td { color: var(--muted); }
+  .ops-table tr:hover td { background: rgba(10,124,62,.04); }
+
+  .badge {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .73rem;
+  }
+  .badge-green  { background: var(--green-lt);  color: var(--green);  }
+  .badge-orange { background: var(--orange-lt); color: var(--orange); }
+  .badge-red    { background: var(--red-lt);    color: var(--red);    }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    position: relative; z-index: 1;
+    background: var(--bg2);
+  }
+  footer .utfpr { color: var(--green); font-weight: 700; }
+
+  /* ── ANIMATIONS ── */
+  .fade-in {
+    opacity: 0; transform: translateY(20px);
+    animation: fadeUp .6s ease forwards;
+  }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+  .d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s} .d4{animation-delay:.4s}
+
+  /* code inline */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82em;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--green);
+  }
+
+  /* ===== Refinamentos visuais e acessibilidade ===== */
+  :root{
+    --green-dark:#075a2d;
+    --focus:#2563eb;
+    --code-bg:#0b1220;
+    --code-border:#243247;
+  }
+
+  ::selection{background:rgba(10,124,62,.18);color:var(--text)}
+  :focus-visible{outline:3px solid rgba(37,99,235,.35);outline-offset:3px;border-radius:6px}
+
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(3,105,161,.055), transparent 24rem),
+      radial-gradient(circle at 85% 35%, rgba(10,124,62,.05), transparent 28rem),
+      var(--bg);
+  }
+
+  body::before{opacity:.55}
+
+  nav{
+    box-shadow:0 1px 0 rgba(15,23,42,.03),0 8px 28px rgba(15,23,42,.04);
+  }
+
+  .nav-logo{letter-spacing:-.02em}
+  .nav-links a{position:relative;padding:7px 0}
+  .nav-links a::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+    background:var(--green);transform:scaleX(0);transform-origin:left;
+    transition:transform .22s ease;
+  }
+  .nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1)}
+  .nav-links a.active{color:var(--green);font-weight:700}
+
+  .hero h1{letter-spacing:-.045em}
+  .hero h1 span{
+    display:inline-block;
+    background:linear-gradient(135deg,var(--green),#0369a1);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero-badge{box-shadow:0 0 0 6px rgba(10,124,62,.04)}
+  .institution-badge{animation:heroFloat 5s ease-in-out infinite}
+  @keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  .card,.step,.diagram-box,.code-wrap{
+    will-change:transform;
+  }
+  .card:hover{transform:translateY(-5px)}
+  .step:hover{transform:translateX(4px);box-shadow:0 8px 22px rgba(3,105,161,.07)}
+
+  .diagram-box{
+    position:relative;
+    isolation:isolate;
+  }
+  .diagram-box::before{
+    content:"";
+    position:absolute;inset:0;pointer-events:none;z-index:-1;
+    background:linear-gradient(120deg,rgba(255,255,255,.6),transparent 40%,rgba(10,124,62,.025));
+  }
+
+  /* animações sutis nos diagramas */
+  .diagram-box svg line,
+  .diagram-box svg path{
+    stroke-linecap:round;
+  }
+  .diagram-box svg line[marker-end]{
+    stroke-dasharray:8 5;
+    animation:flowLine 2.4s linear infinite;
+  }
+  @keyframes flowLine{to{stroke-dashoffset:-26}}
+
+  .diagram-box svg rect{
+    transition:filter .25s ease,transform .25s ease;
+  }
+  .diagram-box:hover svg rect[stroke]{
+    filter:drop-shadow(0 3px 5px rgba(15,23,42,.08));
+  }
+
+  .code-wrap{
+    box-shadow:0 14px 34px rgba(15,23,42,.10);
+  }
+  .code-header{
+    position:sticky;top:0;z-index:2;
+  }
+  pre{tab-size:4}
+  .code-wrap .copy-btn{
+    margin-left:auto;border:1px solid #334155;background:#111c2f;color:#cbd5e1;
+    border-radius:7px;padding:5px 9px;font:600 .68rem 'JetBrains Mono',monospace;
+    cursor:pointer;transition:.2s ease;
+  }
+  .code-wrap .copy-btn:hover{background:#1e293b;color:#fff;transform:translateY(-1px)}
+
+  .progress{
+    position:fixed;top:0;left:0;width:100%;height:3px;z-index:1001;
+    transform-origin:left;transform:scaleX(0);
+    background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));
+  }
+
+  .back-top{
+    position:fixed;right:22px;bottom:22px;width:42px;height:42px;border:1px solid var(--border);
+    border-radius:50%;background:rgba(255,255,255,.92);color:var(--green);
+    display:grid;place-items:center;box-shadow:var(--shadow);cursor:pointer;
+    opacity:0;pointer-events:none;transform:translateY(8px);transition:.25s ease;z-index:90;
+    font-weight:800;
+  }
+  .back-top.show{opacity:1;pointer-events:auto;transform:none}
+  .back-top:hover{transform:translateY(-3px);border-color:var(--green)}
+
+  .section-kicker{
+    display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;
+    padding:6px 10px;border-radius:999px;background:var(--bg3);
+    color:var(--muted);font:600 .7rem 'JetBrains Mono',monospace;
+  }
+  .section-kicker::before{
+    content:"";width:7px;height:7px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 4px rgba(10,124,62,.10);
+  }
+
+  .content-divider{margin:48px 0}
+
+  @media (max-width:700px){
+    section{padding:56px 0}
+    .container{padding:0 18px}
+    .hero{padding:92px 18px 54px;min-height:92vh}
+    .hero p{font-size:1rem}
+    .diagram-box{padding:18px 10px}
+    pre{font-size:.73rem;padding:17px;line-height:1.72}
+    .card{padding:20px}
+    .ops-table{display:block;overflow-x:auto;white-space:nowrap}
+    .back-top{right:14px;bottom:14px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{
+      animation-duration:.001ms!important;
+      animation-iteration-count:1!important;
+      transition-duration:.001ms!important;
+    }
+  }
+
+</style>
+</head>
+<body>
+<div aria-hidden="true" class="progress"></div>
+<!-- ── NAV ── -->
+<nav>
+<div class="nav-inner">
+<span class="nav-logo">// lista_encadeada.c — UTFPR</span>
+<div class="nav-links">
+<a href="#conceito">Conceito</a>
+<a href="#estrutura">Estrutura</a>
+<a href="#operacoes">Operações</a>
+<a href="#memoria">Memória</a>
+<a href="#complexidade">Complexidade</a>
+</div>
+</div>
+</nav>
+<!-- ── HERO ── -->
+<div class="hero">
+<div class="institution-badge">
+<span class="inst-name">Universidade Tecnológica Federal do Paraná</span>
+<span class="prof-name">// Prof. Clayton Kossoski · Estrutura de Dados</span>
+</div>
+<div class="hero-badge">Estrutura de Dados · Linguagem C</div>
+<h1>Lista Dinâmica<br/><span>Encadeada</span></h1>
+<p>Entenda como funciona a estrutura de dados mais fundamental da computação — do ponteiro ao nó, do nó à memória.</p>
+<div class="scroll-hint">scroll</div>
+</div>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 1 — CONCEITO
+     ══════════════════════════════════ -->
+<section id="conceito">
+<div class="container">
+<div class="section-label">// 01 — Conceito</div>
+<h2>O que é uma Lista Encadeada?</h2>
+<p class="lead">
+      Ao contrário de um array, os elementos não ficam em posições contíguas de memória.
+      Cada elemento aponta para o próximo, formando uma <strong style="color:var(--green)">cadeia de ponteiros</strong>.
+    </p>
+<!-- Fig 1 — Array vs Lista -->
+<div class="diagram-box fade-in">
+<svg height="auto" style="max-width:820px" viewbox="0 0 820 290" width="100%">
+<!-- ── ARRAY ── -->
+<text fill="#64748b" font-size="11" letter-spacing="2" x="20" y="28">ARRAY — posições contíguas</text>
+<rect fill="#f0fdf4" height="52" rx="8" stroke="#0a7c3e" stroke-width="1.5" width="80" x="20" y="40"></rect>
+<text fill="#0a7c3e" font-size="12" font-weight="700" text-anchor="middle" x="60" y="61">Bianca</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="60" y="79">mat:1</text>
+<rect fill="#f0fdf4" height="52" rx="8" stroke="#0a7c3e" stroke-width="1.5" width="80" x="106" y="40"></rect>
+<text fill="#0a7c3e" font-size="12" font-weight="700" text-anchor="middle" x="146" y="61">Andre</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="146" y="79">mat:2</text>
+<rect fill="#f0fdf4" height="52" rx="8" stroke="#0a7c3e" stroke-width="1.5" width="80" x="192" y="40"></rect>
+<text fill="#0a7c3e" font-size="12" font-weight="700" text-anchor="middle" x="232" y="61">Ana</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="232" y="79">mat:3</text>
+<rect fill="#f0fdf4" height="52" rx="8" stroke="#0a7c3e" stroke-width="1.5" width="80" x="278" y="40"></rect>
+<text fill="#0a7c3e" font-size="12" font-weight="700" text-anchor="middle" x="318" y="61">Ricardo</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="318" y="79">mat:4</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="60" y="106">[0]</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="146" y="106">[1]</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="232" y="106">[2]</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="318" y="106">[3]</text>
+<rect fill="rgba(10,124,62,.12)" height="6" rx="3" stroke="rgba(10,124,62,.3)" stroke-width="1" width="338" x="20" y="112"></rect>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="189" y="132">bloco contínuo na memória</text>
+<!-- ── LISTA ── -->
+<text fill="#64748b" font-size="11" letter-spacing="2" x="440" y="28">LISTA ENCADEADA — nós dispersos</text>
+<!-- Nó 1: Bianca -->
+<rect fill="#eff6ff" height="56" rx="8" stroke="#0369a1" stroke-width="1.5" width="90" x="440" y="40"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="485" y="61">Bianca</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="485" y="75">mat:1</text>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="485" y="89">→ próx</text>
+<!-- seta Bianca → Andre (diagonal para cima-direita) -->
+<defs>
+<marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#6d28d9"></path>
+</marker>
+<marker id="arr-red" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#b91c1c"></path>
+</marker>
+<marker id="arr-green" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#0a7c3e"></path>
+</marker>
+</defs>
+<line marker-end="url(#arr)" stroke="#6d28d9" stroke-width="1.5" x1="530" x2="552" y1="68" y2="52"></line>
+<!-- Nó 2: Andre (topo-direita) -->
+<rect fill="#eff6ff" height="56" rx="8" stroke="#0369a1" stroke-width="1.5" width="90" x="558" y="18"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="603" y="38">Andre</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="603" y="53">mat:2</text>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="603" y="67">→ próx</text>
+<!-- seta Andre → Ana (diagonal para baixo-direita) -->
+<line marker-end="url(#arr)" stroke="#6d28d9" stroke-width="1.5" x1="648" x2="672" y1="46" y2="80"></line>
+<!-- Nó 3: Ana (meio-baixo) -->
+<rect fill="#eff6ff" height="56" rx="8" stroke="#0369a1" stroke-width="1.5" width="90" x="678" y="82"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="723" y="102">Ana</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="723" y="117">mat:3</text>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="723" y="131">→ próx</text>
+<!-- seta Ana → Ricardo (diagonal para cima-direita) -->
+<line marker-end="url(#arr)" stroke="#6d28d9" stroke-width="1.5" x1="768" x2="764" y1="100" y2="60"></line>
+<!-- Nó 4: Ricardo (topo, mais à direita) -->
+<rect fill="#fff1f2" height="50" opacity=".8" rx="8" stroke="#0369a1" stroke-width="1.5" width="90" x="720" y="18"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" opacity=".9" text-anchor="middle" x="765" y="38">Ricardo</text>
+<text fill="#64748b" font-size="10" opacity=".9" text-anchor="middle" x="765" y="53">mat:4</text>
+<text fill="#b91c1c" font-size="9" text-anchor="middle" x="765" y="64">NULL</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="620" y="170">nós em diferentes endereços, ligados por ponteiros</text>
+<!-- Legenda -->
+<rect fill="#0a7c3e" height="12" rx="3" width="12" x="20" y="210"></rect>
+<text fill="#475569" font-size="11" x="38" y="221">dados do aluno</text>
+<rect fill="#6d28d9" height="12" rx="3" width="12" x="20" y="232"></rect>
+<text fill="#475569" font-size="11" x="38" y="243">ponteiro próximo</text>
+<rect fill="#b91c1c" height="12" rx="3" width="12" x="190" y="210"></rect>
+<text fill="#475569" font-size="11" x="208" y="221">fim da lista (NULL)</text>
+<rect fill="#0369a1" height="12" rx="3" width="12" x="190" y="232"></rect>
+<text fill="#475569" font-size="11" x="208" y="243">nó (struct elemento)</text>
+</svg>
+<figcaption>Fig. 1 — Array vs Lista Encadeada: organização na memória</figcaption>
+</div>
+<div class="card-grid">
+<div class="card fade-in d1">
+<h3><span class="icon icon-green">✦</span> Tamanho dinâmico</h3>
+<p>Cresce e encolhe em tempo de execução com <code>malloc()</code> e <code>free()</code>. Alocação sob demanda, sem exigir um bloco contíguo para todos os elementos.</p>
+</div>
+<div class="card fade-in d2">
+<h3><span class="icon icon-cyan">⇄</span> Inserção eficiente</h3>
+<p>Depois de localizar a posição, inserir um nó exige apenas o ajuste de alguns ponteiros. A localização da posição pode custar O(n).</p>
+</div>
+<div class="card fade-in d3">
+<h3><span class="icon icon-purple">↗</span> Acesso sequencial</h3>
+<p>Para chegar ao nó N é preciso percorrer N-1 nós. Não há acesso aleatório por índice.</p>
+</div>
+<div class="card fade-in d4">
+<h3><span class="icon icon-orange">⚙</span> Gerência manual</h3>
+<p>O programador controla cada alocação (<code>malloc()</code>) e desalocação (<code>free()</code>). Responsabilidade total.</p>
+</div>
+</div>
+</div>
+</section>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 2 — ESTRUTURA
+     ══════════════════════════════════ -->
+<section id="estrutura">
+<div class="container">
+<div class="section-label">// 02 — Estrutura</div>
+<h2>Anatomia do Nó</h2>
+<p class="lead">O código define duas structs e um typedef que trabalham juntos.</p>
+<!-- Fig 2 -->
+<div class="diagram-box">
+<svg height="auto" style="max-width:760px" viewbox="0 0 760 200" width="100%">
+<!-- struct aluno -->
+<rect fill="#f0fdf4" height="160" rx="12" stroke="#0a7c3e" stroke-width="1.5" width="270" x="20" y="20"></rect>
+<rect fill="rgba(10,124,62,.12)" height="36" rx="12 12 0 0" width="270" x="20" y="20"></rect>
+<text fill="#0a7c3e" font-size="13" font-weight="700" text-anchor="middle" x="155" y="43">struct aluno</text>
+<text fill="#0369a1" font-size="12" x="40" y="76">int</text>
+<text fill="#1e293b" font-size="12" x="86" y="76">matricula</text>
+<text fill="#0369a1" font-size="12" x="40" y="98">char</text>
+<text fill="#1e293b" font-size="12" x="86" y="98">nome[30]</text>
+<text fill="#0369a1" font-size="12" x="40" y="120">float</text>
+<text fill="#1e293b" font-size="12" x="86" y="120">n1, n2, n3</text>
+<text fill="#94a3b8" font-size="10" x="40" y="150">← dados do aluno (payload)</text>
+<!-- struct elemento -->
+<rect fill="#eff6ff" height="160" rx="12" stroke="#0369a1" stroke-width="1.5" width="280" x="330" y="20"></rect>
+<rect fill="rgba(3,105,161,.1)" height="36" rx="12 12 0 0" width="280" x="330" y="20"></rect>
+<text fill="#0369a1" font-size="13" font-weight="700" text-anchor="middle" x="470" y="43">struct elemento  (nó)</text>
+<rect fill="rgba(10,124,62,.08)" height="46" rx="8" stroke="rgba(10,124,62,.3)" stroke-width="1" width="240" x="350" y="64"></rect>
+<text fill="#94a3b8" font-size="10" x="370" y="82">← embutido aqui</text>
+<text fill="#0a7c3e" font-size="12" font-weight="600" x="370" y="101">aluno  dados</text>
+<rect fill="rgba(109,40,217,.08)" height="36" rx="8" stroke="rgba(109,40,217,.3)" stroke-width="1" width="240" x="350" y="118"></rect>
+<text fill="#6d28d9" font-size="12" font-weight="600" x="370" y="141">elemento *prox</text>
+<text fill="#94a3b8" font-size="9" x="540" y="141">→ próximo nó</text>
+<!-- seta de composição: aluno → dentro de elemento -->
+<line marker-end="url(#arr-green)" stroke="#0a7c3e" stroke-dasharray="5,3" stroke-width="1.5" x1="290" x2="330" y1="98" y2="85"></line>
+<!-- typedef -->
+<rect fill="#ede9fe" height="62" rx="10" stroke="#6d28d9" stroke-width="1.5" width="88" x="650" y="68"></rect>
+<text fill="#6d28d9" font-size="12" font-weight="700" text-anchor="middle" x="694" y="88">Lista</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="694" y="106">elemento*</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="694" y="120">alias</text>
+<!-- seta elemento → Lista -->
+<line marker-end="url(#arr)" stroke="#6d28d9" stroke-dasharray="5,3" stroke-width="1.5" x1="610" x2="650" y1="99" y2="99"></line>
+</svg>
+<figcaption>Fig. 2 — Estrutura de dados: aluno dentro de elemento</figcaption>
+</div>
+<div class="two-col">
+<div>
+<div class="code-wrap">
+<div class="code-header">
+<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+<span class="code-title">structs.cpp</span>
+</div>
+<pre>// Dados do aluno
+typedef struct aluno {
+    int   matricula;       // chave
+    char  nome[30];        // nome
+    float n1, n2, n3;      // notas
+} aluno;
+
+// Nó da lista
+typedef struct elemento {
+    aluno dados;                 // informação
+    struct elemento *prox;       // próximo nó
+} elemento;
+
+// Alias para ponteiro para o primeiro nó
+typedef elemento *Lista;</pre>
+</div>
+</div>
+<div>
+<div class="highlight-box">
+<strong>Por que Lista é um ponteiro?</strong><br/>
+<code>typedef elemento* Lista</code> define que <em>Lista</em> é um ponteiro para o primeiro nó. Quando a lista está vazia, ele vale <code>NULL</code>.
+        </div>
+<div class="highlight-box info">
+<strong>Ponteiro para ponteiro (Lista*)</strong><br/>
+          As funções recebem <code>Lista*</code> (ponteiro para ponteiro). Isso permite alterar o endereço do primeiro nó dentro da função — essencial para inserções no início.
+        </div>
+<div class="highlight-box warn">
+<strong>char nome[30]</strong><br/>
+          O nome é um array de char de tamanho fixo — recurso nativo da linguagem C. Para strings flexíveis use uma cadeia de caracteres (`char`) ou outra estratégia apropriada em C.
+        </div>
+</div>
+</div>
+</div>
+</section>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 3 — OPERAÇÕES
+     ══════════════════════════════════ -->
+<section id="operacoes">
+<div class="container">
+<div class="section-label">// 03 — Operações</div>
+<h2>As principais funções da lista</h2>
+<p class="lead">A página acompanha seis funções fundamentais: criar, inserir, remover, medir, imprimir e liberar a lista.</p>
+<!-- ── CRIA_LISTA ── -->
+<div style="margin-bottom:52px">
+<h3 style="font-size:1.35rem;margin-bottom:8px">
+<span style="color:var(--green);font-family:'JetBrains Mono',monospace">cria_lista()</span>
+</h3>
+<p style="color:var(--muted);margin-bottom:18px">Aloca dinamicamente um ponteiro para <code>Lista</code> e inicializa a lista com <code>NULL</code>.</p>
+<!-- Fig 3 -->
+<div class="diagram-box">
+<svg height="auto" style="max-width:600px" viewbox="0 0 600 130" width="100%">
+<!-- STACK -->
+<rect fill="#f8fafc" height="84" rx="10" stroke="#cbd5e1" stroke-width="1.5" width="130" x="20" y="20"></rect>
+<text fill="#94a3b8" font-size="10" letter-spacing="1" text-anchor="middle" x="85" y="14">STACK</text>
+<rect fill="#f0fdf4" height="34" rx="7" stroke="rgba(10,124,62,.4)" stroke-width="1" width="110" x="30" y="32"></rect>
+<text fill="#0a7c3e" font-size="12" font-weight="700" text-anchor="middle" x="85" y="50">li  (Lista*)</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="85" y="63">0x7ffe1234</text>
+<!-- seta li → *li -->
+<line marker-end="url(#arr-green)" stroke="#0a7c3e" stroke-width="1.5" x1="150" x2="224" y1="49" y2="49"></line>
+<!-- HEAP: *li -->
+<rect fill="#f8fafc" height="84" rx="10" stroke="#cbd5e1" stroke-width="1.5" width="140" x="230" y="20"></rect>
+<text fill="#94a3b8" font-size="10" letter-spacing="1" text-anchor="middle" x="300" y="14">HEAP</text>
+<rect fill="#ede9fe" height="34" rx="7" stroke="rgba(109,40,217,.35)" stroke-width="1" width="116" x="242" y="32"></rect>
+<text fill="#6d28d9" font-size="12" font-weight="700" text-anchor="middle" x="300" y="50">*li  (Lista)</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="300" y="63">0xbf001100</text>
+<!-- seta *li → NULL -->
+<line marker-end="url(#arr-red)" stroke="#b91c1c" stroke-width="1.5" x1="358" x2="454" y1="49" y2="49"></line>
+<!-- NULL box -->
+<rect fill="#fff1f2" height="34" rx="8" stroke="rgba(185,28,28,.4)" stroke-width="1.5" width="96" x="460" y="32"></rect>
+<text fill="#b91c1c" font-size="13" font-weight="700" text-anchor="middle" x="508" y="54">NULL</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="300" y="100">lista vazia — nenhum nó ainda</text>
+</svg>
+<figcaption>Fig. 3 — Após cria_lista(): li aponta para um ponteiro que vale NULL</figcaption>
+</div>
+<div class="code-wrap">
+<div class="code-header">
+<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+<span class="code-title">cria_lista()</span>
+</div>
+<pre>Lista *cria_lista() {
+    Lista *li = malloc(sizeof(*li));
+
+    if (li != NULL) {
+        *li = NULL; // lista começa vazia
+    }
+
+    return li;
+}</pre>
+</div>
+</div>
+<!-- ── INSERE ORDENADA ── -->
+<div style="margin-bottom:52px">
+<h3 style="font-size:1.35rem;margin-bottom:8px">
+<span style="color:var(--cyan);font-family:'JetBrains Mono',monospace">insere_lista_ordenada()</span>
+</h3>
+<p style="color:var(--muted);margin-bottom:18px">Percorre a lista comparando matrículas até achar a posição correta, depois redireciona os ponteiros.</p>
+<!-- Fig 4 — Inserção ordenada -->
+<div class="diagram-box">
+<svg height="auto" style="max-width:760px" viewbox="0 0 760 270" width="100%">
+<defs>
+<marker id="arr2" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#6d28d9"></path>
+</marker>
+<marker id="arr2g" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#0a7c3e"></path>
+</marker>
+<marker id="arr2r" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#b91c1c"></path>
+</marker>
+</defs>
+<!-- ── ANTES ── -->
+<text fill="#64748b" font-size="11" letter-spacing="1" x="20" y="18">ANTES — inserindo Ana (mat:3) entre Andre(2) e Ricardo(4)</text>
+<!-- Bianca -->
+<rect fill="#eff6ff" height="60" rx="10" stroke="#0369a1" stroke-width="1.5" width="100" x="20" y="30"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="70" y="51">Bianca</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="70" y="66">mat: 1</text>
+<rect fill="#ede9fe" height="12" rx="4" width="84" x="28" y="74"></rect>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="70" y="83">→ prox</text>
+<!-- seta Bianca → Andre (direita) -->
+<line marker-end="url(#arr2)" stroke="#6d28d9" stroke-width="1.5" x1="120" x2="156" y1="68" y2="68"></line>
+<!-- Andre -->
+<rect fill="#eff6ff" height="60" rx="10" stroke="#0369a1" stroke-width="1.5" width="100" x="162" y="30"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="212" y="51">Andre</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="212" y="66">mat: 2</text>
+<rect fill="#ede9fe" height="12" rx="4" width="84" x="170" y="74"></rect>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="212" y="83">→ prox</text>
+<!-- seta Andre → Ricardo (ANTES, tracejada) -->
+<line marker-end="url(#arr2)" opacity=".45" stroke="#6d28d9" stroke-dasharray="5,3" stroke-width="1.5" x1="262" x2="298" y1="68" y2="68"></line>
+<!-- Ricardo -->
+<rect fill="#eff6ff" height="60" rx="10" stroke="#0369a1" stroke-width="1.5" width="100" x="304" y="30"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="354" y="51">Ricardo</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="354" y="66">mat: 4</text>
+<rect fill="#fee2e2" height="12" rx="4" width="84" x="312" y="74"></rect>
+<text fill="#b91c1c" font-size="9" text-anchor="middle" x="354" y="83">NULL</text>
+<!-- ── DEPOIS ── -->
+<text fill="#64748b" font-size="11" letter-spacing="1" x="20" y="148">DEPOIS — Ana inserida na posição correta</text>
+<!-- Bianca -->
+<rect fill="#eff6ff" height="58" rx="10" stroke="#0369a1" stroke-width="1.5" width="96" x="20" y="162"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="68" y="182">Bianca</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="68" y="196">mat: 1</text>
+<rect fill="#ede9fe" height="10" rx="3" width="80" x="28" y="206"></rect>
+<text fill="#6d28d9" font-size="8" text-anchor="middle" x="68" y="214">→ prox</text>
+<line marker-end="url(#arr2)" stroke="#6d28d9" stroke-width="1.5" x1="116" x2="152" y1="191" y2="191"></line>
+<!-- Andre -->
+<rect fill="#eff6ff" height="58" rx="10" stroke="#0369a1" stroke-width="1.5" width="96" x="158" y="162"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="206" y="182">Andre</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="206" y="196">mat: 2</text>
+<rect fill="#ede9fe" height="10" rx="3" width="80" x="166" y="206"></rect>
+<text fill="#6d28d9" font-size="8" text-anchor="middle" x="206" y="214">→ prox</text>
+<!-- seta Andre → Ana (NOVA, verde) -->
+<line marker-end="url(#arr2g)" stroke="#0a7c3e" stroke-width="2" x1="254" x2="292" y1="191" y2="191"></line>
+<!-- Ana (NOVO) -->
+<rect fill="#f0fdf4" height="66" rx="10" stroke="#0a7c3e" stroke-width="2" width="104" x="298" y="158"></rect>
+<text fill="#0a7c3e" font-size="10" font-weight="700" text-anchor="middle" x="350" y="177">Ana ← NOVO</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="350" y="191">mat: 3</text>
+<rect fill="#ede9fe" height="12" rx="4" width="84" x="308" y="204"></rect>
+<text fill="#6d28d9" font-size="8" text-anchor="middle" x="350" y="213">→ prox</text>
+<!-- seta Ana → Ricardo -->
+<line marker-end="url(#arr2)" stroke="#6d28d9" stroke-width="1.5" x1="402" x2="438" y1="191" y2="191"></line>
+<!-- Ricardo -->
+<rect fill="#eff6ff" height="58" rx="10" stroke="#0369a1" stroke-width="1.5" width="100" x="444" y="162"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="494" y="182">Ricardo</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="494" y="196">mat: 4</text>
+<rect fill="#fee2e2" height="10" rx="3" width="84" x="452" y="206"></rect>
+<text fill="#b91c1c" font-size="8" text-anchor="middle" x="494" y="214">NULL</text>
+<!-- rótulos ant / atual -->
+<text fill="#b45309" font-size="10" text-anchor="middle" x="206" y="132">ant</text>
+<line stroke="#b45309" stroke-dasharray="3,2" stroke-width="1" x1="206" x2="206" y1="135" y2="160"></line>
+<text fill="#0369a1" font-size="10" text-anchor="middle" x="354" y="132">atual</text>
+<line stroke="#0369a1" stroke-dasharray="3,2" stroke-width="1" x1="354" x2="354" y1="135" y2="156"></line>
+</svg>
+<figcaption>Fig. 4 — Inserção ordenada: ponteiros ant e atual navegam; novo nó é encaixado entre Andre e Ricardo</figcaption>
+</div>
+<div class="steps">
+<div class="step">
+<div class="step-num">1</div>
+<div class="step-content">
+<h4>Aloca novo nó</h4>
+<p><code>elemento *no = malloc(sizeof(elemento))</code> — reserva memória na heap para o nó e copia os dados do aluno.</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">2</div>
+<div class="step-content">
+<h4>Avança até a posição correta</h4>
+<p>Loop <code>while</code> compara <code>atual-&gt;dados.matricula &lt; al.matricula</code> e avança <strong>ant</strong> e <strong>atual</strong> enquanto a posição correta não é encontrada.</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">3</div>
+<div class="step-content">
+<h4>Inserção no início (ant == NULL)</h4>
+<p>O novo nó passa a ser o primeiro: <code>no-&gt;prox = *li; *li = no</code>.</p>
+</div>
+</div>
+<div class="step">
+<div class="step-num">4</div>
+<div class="step-content">
+<h4>Inserção no meio / fim</h4>
+<p><code>no-&gt;prox = atual; ant-&gt;prox = no</code> — o nó anterior passa a apontar para o novo, que por sua vez aponta para o restante da lista.</p>
+</div>
+</div>
+</div>
+<div class="code-wrap" style="margin-top:22px">
+<div class="code-header">
+<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+<span class="code-title">insere_lista_ordenada()</span>
+</div>
+<pre>int insere_lista_ordenada(Lista *li, aluno al) {
+    if (li == NULL) {
+        return 0;
+    }
+
+    elemento *no = malloc(sizeof(*no));
+
+    if (no == NULL) {
+        return 0;
+    }
+
+    no-&gt;dados = al;
+    no-&gt;prox = NULL;
+
+    elemento *ant = NULL;
+    elemento *atual = *li;
+
+    // Procura a posição correta.
+    while (atual != NULL &amp;&amp;
+           atual-&gt;dados.matricula &lt; al.matricula) {
+        ant = atual;
+        atual = atual-&gt;prox;
+    }
+
+    // Inserção no início.
+    if (ant == NULL) {
+        no-&gt;prox = *li;
+        *li = no;
+    }
+    // Inserção no meio ou no final.
+    else {
+        no-&gt;prox = atual;
+        ant-&gt;prox = no;
+    }
+
+    return 1;
+}</pre>
+</div>
+</div>
+<!-- ── REMOVE FINAL ── -->
+<div style="margin-bottom:52px">
+<h3 style="font-size:1.35rem;margin-bottom:8px">
+<span style="color:var(--red);font-family:'JetBrains Mono',monospace">remove_lista_final()</span>
+</h3>
+<p style="color:var(--muted);margin-bottom:18px">Percorre até o último nó, desconecta o penúltimo e libera a memória.</p>
+<!-- Fig 5 -->
+<div class="diagram-box">
+<svg height="auto" style="max-width:680px" viewbox="0 0 680 180" width="100%">
+<defs>
+<marker id="arr3" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#6d28d9"></path>
+</marker>
+</defs>
+<text fill="#64748b" font-size="11" letter-spacing="1" x="20" y="18">REMOVENDO o último nó (Ricardo, mat:4)</text>
+<!-- Bianca -->
+<rect fill="#eff6ff" height="56" rx="10" stroke="#0369a1" stroke-width="1.5" width="100" x="20" y="30"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="70" y="51">Bianca</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="70" y="65">mat: 1</text>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="70" y="79">→ prox</text>
+<line marker-end="url(#arr3)" stroke="#6d28d9" stroke-width="1.5" x1="120" x2="156" y1="58" y2="58"></line>
+<!-- Andre -->
+<rect fill="#eff6ff" height="56" rx="10" stroke="#0369a1" stroke-width="1.5" width="100" x="162" y="30"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="212" y="51">Andre</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="212" y="65">mat: 2</text>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="212" y="79">→ prox</text>
+<line marker-end="url(#arr3)" stroke="#6d28d9" stroke-width="1.5" x1="262" x2="298" y1="58" y2="58"></line>
+<!-- Ana (penúltimo = ant) -->
+<rect fill="#fef3c7" height="56" rx="10" stroke="#b45309" stroke-width="2" width="100" x="304" y="30"></rect>
+<text fill="#b45309" font-size="11" font-weight="700" text-anchor="middle" x="354" y="51">Ana</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="354" y="65">mat: 3</text>
+<text fill="#6d28d9" font-size="9" text-anchor="middle" x="354" y="79">→ prox</text>
+<!-- seta cortada (tracejada + X) -->
+<line stroke="#b91c1c" stroke-dasharray="6,3" stroke-width="2" x1="404" x2="438" y1="58" y2="58"></line>
+<!-- X sobre a seta -->
+<line stroke="#b91c1c" stroke-width="2.5" x1="414" x2="428" y1="50" y2="66"></line>
+<line stroke="#b91c1c" stroke-width="2.5" x1="428" x2="414" y1="50" y2="66"></line>
+<!-- Ricardo (sendo removido) -->
+<rect fill="#fee2e2" height="56" rx="10" stroke="#b91c1c" stroke-dasharray="6,3" stroke-width="2" width="100" x="444" y="30"></rect>
+<text fill="#b91c1c" font-size="11" font-weight="700" text-anchor="middle" x="494" y="51">Ricardo</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="494" y="65">mat: 4</text>
+<text fill="#b91c1c" font-size="9" text-anchor="middle" x="494" y="79">NULL</text>
+<!-- free Ricardo -->
+<text fill="#b91c1c" font-size="20" font-weight="700" text-anchor="middle" x="494" y="110">✕</text>
+<text fill="#b91c1c" font-size="10" text-anchor="middle" x="494" y="130">free(no)</text>
+<!-- rótulos -->
+<text fill="#b45309" font-size="10" text-anchor="middle" x="354" y="107">ant (penúltimo)</text>
+<line stroke="#b45309" stroke-dasharray="3,2" stroke-width="1" x1="354" x2="354" y1="110" y2="88"></line>
+<text fill="#b91c1c" font-size="10" text-anchor="middle" x="494" y="148">no (último) — será deletado</text>
+<!-- resultado -->
+<text fill="#0a7c3e" font-size="10" text-anchor="middle" x="354" y="168">ant-&gt;prox = NULL → Ana passa a ser o último nó</text>
+</svg>
+<figcaption>Fig. 5 — Remoção do último nó: ant-&gt;prox = NULL, free(no)</figcaption>
+</div>
+<div class="code-wrap">
+<div class="code-header">
+<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+<span class="code-title">remove_lista_final()</span>
+</div>
+<pre>int remove_lista_final(Lista *li) {
+    if (li == NULL || *li == NULL) {
+        return 0;
+    }
+
+    elemento *ant = NULL;
+    elemento *no = *li;
+
+    // Percorre a lista até o último nó.
+    while (no-&gt;prox != NULL) {
+        ant = no;
+        no = no-&gt;prox;
+    }
+
+    // Se era o único nó, a lista fica vazia.
+    if (ant == NULL) {
+        *li = NULL;
+    }
+    // Caso contrário, o penúltimo passa a ser o último.
+    else {
+        ant-&gt;prox = NULL;
+    }
+
+    free(no);
+    return 1;
+}</pre>
+</div>
+</div>
+<!-- ── LIBERA_LISTA ── -->
+<div style="margin-bottom:52px">
+<h3 style="font-size:1.35rem;margin-bottom:8px">
+<span style="color:var(--orange);font-family:'JetBrains Mono',monospace">libera_lista()</span>
+</h3>
+<p style="color:var(--muted);margin-bottom:14px">Percorre todos os nós e libera a memória de cada um — evita <em>memory leak</em>.</p>
+<div class="highlight-box warn">
+<strong>Memory leak</strong> acontece quando você <code>free()</code> o ponteiro da lista mas esquece de liberar cada nó individualmente. Cada <code>malloc()</code> deve ter exatamente um <code>free()</code> correspondente.
+      </div>
+<div class="code-wrap" style="margin-top:18px">
+<div class="code-header">
+<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+<span class="code-title">libera_lista()</span>
+</div>
+<pre>void libera_lista(Lista *li) {
+    if (li != NULL) {
+        elemento *no;
+
+        while (*li != NULL) {
+            no = *li;
+            *li = (*li)-&gt;prox;
+            free(no);
+        }
+
+        free(li);
+    }
+}</pre>
+</div>
+</div>
+</div>
+</section>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 4 — MEMÓRIA
+     ══════════════════════════════════ -->
+<section id="memoria">
+<div class="container">
+<div class="section-label">// 04 — Memória</div>
+<h2>Stack vs Heap</h2>
+<p class="lead">Nesta implementação, os nós são alocados dinamicamente na heap. O ponteiro inicial (<code>li</code>) fica na stack.</p>
+<!-- Fig 6 -->
+<div class="diagram-box">
+<svg height="auto" style="max-width:760px" viewbox="0 0 760 280" width="100%">
+<defs>
+<marker id="arr4g" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#0a7c3e"></path>
+</marker>
+<marker id="arr4p" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#6d28d9"></path>
+</marker>
+<marker id="arr4r" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#b91c1c"></path>
+</marker>
+</defs>
+<!-- STACK -->
+<rect fill="#f8fafc" height="240" rx="14" stroke="#cbd5e1" stroke-width="1.5" width="175" x="20" y="20"></rect>
+<rect fill="#eef1f6" height="40" rx="14 14 0 0" width="175" x="20" y="20"></rect>
+<text fill="#64748b" font-size="12" font-weight="700" letter-spacing="2" text-anchor="middle" x="107" y="45">STACK</text>
+<rect fill="#f0fdf4" height="36" rx="8" stroke="rgba(10,124,62,.35)" stroke-width="1" width="147" x="34" y="72"></rect>
+<text fill="#0a7c3e" font-size="11" font-weight="700" text-anchor="middle" x="107" y="87">li  (Lista*)</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="107" y="101">0x7ffe1234</text>
+<rect fill="#eff6ff" height="36" rx="8" stroke="rgba(3,105,161,.3)" stroke-width="1" width="147" x="34" y="116"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="107" y="131">i  (int loop)</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="107" y="145">valor: 0..3</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="107" y="218">auto-gerenciada</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="107" y="234">pelo compilador</text>
+<!-- seta stack → heap -->
+<line marker-end="url(#arr4g)" stroke="#0a7c3e" stroke-width="1.5" x1="195" x2="266" y1="90" y2="90"></line>
+<!-- HEAP -->
+<rect fill="#f8fafc" height="240" rx="14" stroke="#cbd5e1" stroke-width="1.5" width="468" x="272" y="20"></rect>
+<rect fill="#eef1f6" height="40" rx="14 14 0 0" width="468" x="272" y="20"></rect>
+<text fill="#64748b" font-size="12" font-weight="700" letter-spacing="2" text-anchor="middle" x="506" y="45">HEAP  (malloc / free)</text>
+<!-- *li -->
+<rect fill="#ede9fe" height="52" rx="8" stroke="rgba(109,40,217,.35)" stroke-width="1.5" width="112" x="286" y="66"></rect>
+<text fill="#6d28d9" font-size="11" font-weight="700" text-anchor="middle" x="342" y="84">*li (Lista)</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="342" y="99">0xbf001100</text>
+<text fill="#94a3b8" font-size="8" text-anchor="middle" x="342" y="112">→ primeiro nó</text>
+<!-- seta *li → nó Bianca -->
+<line marker-end="url(#arr4p)" stroke="#6d28d9" stroke-width="1.5" x1="398" x2="428" y1="92" y2="92"></line>
+<!-- nó Bianca -->
+<rect fill="#fff" height="82" rx="8" stroke="#0369a1" stroke-width="1.5" width="114" x="434" y="56"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="491" y="77">Bianca</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="491" y="92">mat:1  n1:9.7</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="491" y="106">0xbf001100</text>
+<rect fill="#ede9fe" height="16" rx="4" width="98" x="442" y="116"></rect>
+<text fill="#6d28d9" font-size="8" text-anchor="middle" x="491" y="128">prox → 0xbf002200</text>
+<!-- seta diagonal Bianca → Andre -->
+<line marker-end="url(#arr4p)" stroke="#6d28d9" stroke-dasharray="3,2" stroke-width="1.2" x1="548" x2="594" y1="128" y2="155"></line>
+<!-- nó Andre -->
+<rect fill="#fff" height="82" rx="8" stroke="#0369a1" stroke-width="1.5" width="114" x="598" y="148"></rect>
+<text fill="#0369a1" font-size="11" font-weight="700" text-anchor="middle" x="655" y="168">Andre</text>
+<text fill="#64748b" font-size="9" text-anchor="middle" x="655" y="183">mat:2  n1:9.5</text>
+<text fill="#94a3b8" font-size="9" text-anchor="middle" x="655" y="197">0xbf002200</text>
+<rect fill="#fee2e2" height="16" rx="4" width="98" x="606" y="208"></rect>
+<text fill="#b91c1c" font-size="8" text-anchor="middle" x="655" y="220">prox → NULL</text>
+<text fill="#94a3b8" font-size="10" text-anchor="middle" x="506" y="235">(outros nós espalhados pela heap...)</text>
+</svg>
+<figcaption>Fig. 6 — Distribuição de memória: stack guarda ponteiro para li, heap guarda os nós</figcaption>
+</div>
+<div class="card-grid">
+<div class="card">
+<h3><span class="icon icon-green">📥</span> Stack</h3>
+<p>Variáveis locais (<code>li</code>, <code>i</code>, <code>no</code>, <code>ant</code>, <code>atual</code>). Gerenciadas automaticamente — surgem na chamada da função e somem no retorno.</p>
+</div>
+<div class="card">
+<h3><span class="icon icon-purple">🔧</span> Heap</h3>
+<p>Os nós alocados com <code>malloc()</code>. Ficam vivos até você chamar <code>free()</code>. O ponteiro da lista (<code>*li</code>) também está aqui.</p>
+</div>
+<div class="card">
+<h3><span class="icon icon-red">⚠</span> Memory Leak</h3>
+<p>Se o programa terminar sem chamar <code>libera_lista()</code>, a memória alocada deixa de ser acessível pelo programa — caracterizando um vazamento de memória durante a execução.</p>
+</div>
+</div>
+</div>
+</section>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 5 — COMPLEXIDADE
+     ══════════════════════════════════ -->
+<section id="complexidade">
+<div class="container">
+<div class="section-label">// 05 — Complexidade</div>
+<h2>Análise de Desempenho</h2>
+<p class="lead">Cada operação tem um custo. Conhecê-lo ajuda a escolher a estrutura adequada.</p>
+<table class="ops-table">
+<thead>
+<tr>
+<th>Operação</th>
+<th>Complexidade</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cria_lista()</code></td>
+<td><span class="badge badge-green">O(1)</span></td>
+<td>Apenas uma alocação e uma atribuição.</td>
+</tr>
+<tr>
+<td><code>insere_lista_ordenada()</code></td>
+<td><span class="badge badge-orange">O(n)</span></td>
+<td>Percorre até achar a posição certa — até n nós no pior caso.</td>
+</tr>
+<tr>
+<td><code>remove_lista_final()</code></td>
+<td><span class="badge badge-orange">O(n)</span></td>
+<td>Precisa chegar ao último nó — percorre toda a lista.</td>
+</tr>
+<tr>
+<td><code>tamanho_lista()</code></td>
+<td><span class="badge badge-orange">O(n)</span></td>
+<td>Conta nó por nó sem cache de tamanho.</td>
+</tr>
+<tr>
+<td><code>imprime_lista()</code></td>
+<td><span class="badge badge-orange">O(n)</span></td>
+<td>Visita todos os n nós para imprimir.</td>
+</tr>
+<tr>
+<td><code>libera_lista()</code></td>
+<td><span class="badge badge-red">O(n)</span></td>
+<td>Desaloca cada um dos n nós individualmente.</td>
+</tr>
+<tr>
+<td>Inserção no início (variação)</td>
+<td><span class="badge badge-green">O(1)</span></td>
+<td>Não é ordenada, mas possível com a mesma estrutura.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-box info" style="margin-top:28px">
+<strong>Dica de otimização:</strong> Armazenar o tamanho na própria estrutura reduz <code>tamanho_lista()</code> de O(n) para O(1). Já <code>remove_lista_final()</code> só pode ser O(1) de forma direta quando a estrutura mantém informação suficiente para localizar o predecessor do último nó, como em uma lista duplamente encadeada.
+    </div>
+<!-- Fig 7 — Lista vs Array quando usar -->
+<div class="diagram-box" style="margin-top:28px">
+<svg height="auto" style="max-width:680px" viewbox="0 0 680 195" width="100%">
+<text fill="#64748b" font-size="12" font-weight="700" letter-spacing="1" text-anchor="middle" x="340" y="20">LISTA ENCADEADA vs ARRAY — quando usar?</text>
+<rect fill="#f0fdf4" height="150" rx="12" stroke="rgba(10,124,62,.35)" stroke-width="1.5" width="300" x="20" y="32"></rect>
+<rect fill="rgba(10,124,62,.1)" height="36" rx="12 12 0 0" width="300" x="20" y="32"></rect>
+<text fill="#0a7c3e" font-size="13" font-weight="700" text-anchor="middle" x="170" y="55">✅ Lista Encadeada</text>
+<text fill="#475569" font-size="11" x="40" y="84">• Inserções/remoções frequentes</text>
+<text fill="#475569" font-size="11" x="40" y="104">• Tamanho desconhecido em tempo</text>
+<text fill="#475569" font-size="11" x="40" y="120">  de compilação</text>
+<text fill="#475569" font-size="11" x="40" y="140">• Não exige memória contígua</text>
+<text fill="#475569" font-size="11" x="40" y="160">• Fila, pilha, lista ordenada</text>
+<rect fill="#eff6ff" height="150" rx="12" stroke="rgba(3,105,161,.35)" stroke-width="1.5" width="300" x="360" y="32"></rect>
+<rect fill="rgba(3,105,161,.1)" height="36" rx="12 12 0 0" width="300" x="360" y="32"></rect>
+<text fill="#0369a1" font-size="13" font-weight="700" text-anchor="middle" x="510" y="55">✅ Array</text>
+<text fill="#475569" font-size="11" x="380" y="84">• Acesso por índice O(1)</text>
+<text fill="#475569" font-size="11" x="380" y="104">• Acesso direto por índice</text>
+<text fill="#475569" font-size="11" x="380" y="124">• Cache-friendly (dados contíguos)</text>
+<text fill="#475569" font-size="11" x="380" y="144">• Sem overhead de ponteiro</text>
+<text fill="#475569" font-size="11" x="380" y="164">• Busca binária / ordenação</text>
+</svg>
+<figcaption>Fig. 7 — Guia de escolha: lista encadeada vs array</figcaption>
+</div>
+</div>
+</section>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 6 — FLUXO MAIN
+     ══════════════════════════════════ -->
+<section>
+<div class="container">
+<div class="section-label">// 06 — Fluxo</div>
+<h2>O que o main() faz, passo a passo</h2>
+<p class="lead">Visualize a execução completa do programa.</p>
+<div class="diagram-box">
+<svg height="auto" style="max-width:660px" viewbox="0 0 660 510" width="100%">
+<defs>
+<marker id="flowArr" markerheight="8" markerwidth="8" orient="auto" refx="4" refy="3">
+<path d="M0,0 L0,6 L8,3 z" fill="#cbd5e1"></path>
+</marker>
+</defs>
+<!-- 1 -->
+<rect fill="#f0fdf4" height="40" rx="10" stroke="rgba(10,124,62,.45)" stroke-width="1.5" width="200" x="230" y="10"></rect>
+<text fill="#0a7c3e" font-size="12" font-weight="700" text-anchor="middle" x="330" y="35">cria_lista()</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="50" y2="70"></line>
+<!-- 2 -->
+<rect fill="#eff6ff" height="52" rx="10" stroke="rgba(3,105,161,.35)" stroke-width="1.5" width="240" x="210" y="74"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="330" y="96">insere_lista_ordenada()  × 4</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="330" y="114">insere: Andre(2), Ricardo(4), Bianca(1), Ana(3)</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="126" y2="146"></line>
+<!-- estado ordenado -->
+<rect fill="#f8fafc" height="46" rx="10" stroke="#e2e8f0" stroke-width="1" width="580" x="40" y="150"></rect>
+<text fill="#0369a1" font-size="10" x="72" y="170">[ mat:1 Bianca ]</text>
+<text fill="#94a3b8" font-size="9" x="72" y="186">→</text>
+<text fill="#0369a1" font-size="10" x="192" y="170">[ mat:2 Andre ]</text>
+<text fill="#94a3b8" font-size="9" x="192" y="186">→</text>
+<text fill="#0369a1" font-size="10" x="304" y="170">[ mat:3 Ana ]</text>
+<text fill="#94a3b8" font-size="9" x="304" y="186">→</text>
+<text fill="#0369a1" font-size="10" x="410" y="170">[ mat:4 Ricardo ]</text>
+<text fill="#b91c1c" font-size="10" x="545" y="170">null</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="196" y2="216"></line>
+<!-- 3 -->
+<rect fill="#fff1f2" height="52" rx="10" stroke="rgba(185,28,28,.35)" stroke-width="1.5" width="240" x="210" y="220"></rect>
+<text fill="#b91c1c" font-size="12" font-weight="700" text-anchor="middle" x="330" y="242">remove_lista_final()  × 4</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="330" y="260">remove Ricardo → Ana → Andre → Bianca</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="272" y2="292"></line>
+<!-- lista vazia -->
+<rect fill="#f8fafc" height="36" rx="10" stroke="#e2e8f0" stroke-width="1" width="200" x="230" y="296"></rect>
+<text fill="#b91c1c" font-size="12" text-anchor="middle" x="330" y="319">lista vazia  [ NULL ]</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="332" y2="352"></line>
+<!-- 4 -->
+<rect fill="#eff6ff" height="52" rx="10" stroke="rgba(3,105,161,.35)" stroke-width="1.5" width="240" x="210" y="356"></rect>
+<text fill="#0369a1" font-size="12" font-weight="700" text-anchor="middle" x="330" y="378">insere_lista_ordenada()  × 4</text>
+<text fill="#64748b" font-size="10" text-anchor="middle" x="330" y="396">mesmos 4 alunos reinseridos</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="408" y2="428"></line>
+<!-- 5 -->
+<rect fill="#fef3c7" height="40" rx="10" stroke="rgba(180,83,9,.4)" stroke-width="1.5" width="200" x="230" y="432"></rect>
+<text fill="#b45309" font-size="12" font-weight="700" text-anchor="middle" x="330" y="457">libera_lista()</text>
+<line marker-end="url(#flowArr)" stroke="#cbd5e1" stroke-width="1.5" x1="330" x2="330" y1="472" y2="488"></line>
+<!-- FIM -->
+<rect fill="#f0fdf4" height="18" rx="9" stroke="rgba(10,124,62,.4)" stroke-width="1" width="104" x="278" y="490"></rect>
+<text fill="#0a7c3e" font-size="10" font-weight="700" text-anchor="middle" x="330" y="503">FIM</text>
+</svg>
+<figcaption>Fig. 8 — Fluxo completo de execução do main()</figcaption>
+</div>
+</div>
+</section>
+<div class="divider"></div>
+<!-- ══════════════════════════════════
+     SEÇÃO 7 — CÓDIGO COMPLETO
+     ══════════════════════════════════ -->
+<section>
+<div class="container">
+<div class="section-label">// 07 — Código Completo</div>
+<h2>Código-fonte Anotado</h2>
+<p class="lead">Todos os blocos reunidos e comentados.</p>
+<div class="code-wrap">
+<div class="code-header">
+<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+<span class="code-title">lista_encadeada.c</span>
+</div>
+<pre>/* lista_encadeada.c */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/* ── DADOS ─────────────────────────── */
+typedef struct aluno {
+    int   matricula;
+    char  nome[30];
+    float n1, n2, n3;
+} aluno;
+
+/* ── NÓ DA LISTA ───────────────────── */
+typedef struct elemento {
+    aluno dados;
+    struct elemento *prox;
+} elemento;
+
+typedef elemento *Lista;
+
+/* ── CRIA ──────────────────────────── */
+Lista *cria_lista() {
+    Lista *li = malloc(sizeof(*li));
+
+    if (li != NULL) {
+        *li = NULL;
+    }
+
+    return li;
+}
+
+/* ── LIBERA ────────────────────────── */
+void libera_lista(Lista *li) {
+    if (li != NULL) {
+        elemento *no;
+
+        while (*li != NULL) {
+            no = *li;
+            *li = (*li)-&gt;prox;
+            free(no);
+        }
+
+        free(li);
+    }
+}
+
+/* ── TAMANHO ───────────────────────── */
+int tamanho_lista(Lista *li) {
+    if (li == NULL) {
+        return 0;
+    }
+
+    int cont = 0;
+    elemento *no = *li;
+
+    while (no != NULL) {
+        cont++;
+        no = no-&gt;prox;
+    }
+
+    return cont;
+}
+
+/* ── INSERÇÃO ORDENADA ─────────────── */
+int insere_lista_ordenada(Lista *li, aluno al) {
+    if (li == NULL) {
+        return 0;
+    }
+
+    elemento *no = malloc(sizeof(*no));
+
+    if (no == NULL) {
+        return 0;
+    }
+
+    no-&gt;dados = al;
+    no-&gt;prox = NULL;
+
+    elemento *ant = NULL;
+    elemento *atual = *li;
+
+    while (atual != NULL &amp;&amp;
+           atual-&gt;dados.matricula &lt; al.matricula) {
+        ant = atual;
+        atual = atual-&gt;prox;
+    }
+
+    if (ant == NULL) {
+        no-&gt;prox = *li;
+        *li = no;
+    }
+    else {
+        no-&gt;prox = atual;
+        ant-&gt;prox = no;
+    }
+
+    return 1;
+}
+
+/* ── REMOÇÃO FINAL ─────────────────── */
+int remove_lista_final(Lista *li) {
+    if (li == NULL || *li == NULL) {
+        return 0;
+    }
+
+    elemento *ant = NULL;
+    elemento *no = *li;
+
+    while (no-&gt;prox != NULL) {
+        ant = no;
+        no = no-&gt;prox;
+    }
+
+    if (ant == NULL) {
+        *li = NULL;
+    }
+    else {
+        ant-&gt;prox = NULL;
+    }
+
+    free(no);
+    return 1;
+}
+
+/* ── IMPRESSÃO ─────────────────────── */
+void imprime_lista(Lista *li) {
+    if (li == NULL) {
+        return;
+    }
+
+    elemento *no = *li;
+
+    while (no != NULL) {
+        printf("Matrícula: %d\n", no-&gt;dados.matricula);
+        printf("Nome: %s\n", no-&gt;dados.nome);
+        printf("Notas: %.1f %.1f %.1f\n\n",
+               no-&gt;dados.n1,
+               no-&gt;dados.n2,
+               no-&gt;dados.n3);
+
+        no = no-&gt;prox;
+    }
+}</pre>
+</div>
+</div>
+</section>
+<!-- ── FOOTER ── -->
+<footer>
+<div class="container">
+<p><span class="utfpr">Universidade Tecnológica Federal do Paraná — UTFPR</span></p>
+<p style="margin-top:6px">Prof. <strong>Clayton Kossoski</strong> · Estrutura de Dados · Linguagem C</p>
+<p style="margin-top:10px;opacity:.6">Material didático — Lista Dinâmica Encadeada</p>
+</div>
+</footer>
+<button aria-label="Voltar ao topo" class="back-top" title="Voltar ao topo" type="button">↑</button>
+<script>
+  // Barra de progresso da leitura
+  const progress = document.querySelector('.progress');
+  const backTop = document.querySelector('.back-top');
+  const navLinks = [...document.querySelectorAll('.nav-links a')];
+  const sections = [...document.querySelectorAll('section[id]')];
+
+  function updateScrollUI(){
+    const max = document.documentElement.scrollHeight - innerHeight;
+    progress.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+    backTop.classList.toggle('show', scrollY > 500);
+
+    let current = '';
+    sections.forEach(section => {
+      const top = section.getBoundingClientRect().top;
+      if(top <= 140) current = section.id;
+    });
+    navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + current));
+  }
+
+  addEventListener('scroll', updateScrollUI, {passive:true});
+  addEventListener('load', updateScrollUI);
+
+  backTop.addEventListener('click', () => scrollTo({top:0, behavior:'smooth'}));
+
+  // Botões "Copiar" para os exemplos de código
+  document.querySelectorAll('.code-wrap').forEach((wrap, index) => {
+    const pre = wrap.querySelector('pre');
+    const header = wrap.querySelector('.code-header');
+    if(!pre || !header) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'copiar';
+    btn.setAttribute('aria-label', 'Copiar código');
+    btn.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(pre.innerText);
+        btn.textContent = 'copiado ✓';
+        setTimeout(() => btn.textContent = 'copiar', 1400);
+      }catch{
+        btn.textContent = 'selecione o código';
+        setTimeout(() => btn.textContent = 'copiar', 1400);
+      }
+    });
+    header.appendChild(btn);
+  });
+
+  // Revelação progressiva ao entrar na tela
+  const revealObserver = malloc IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, {threshold:.08, rootMargin:'0px 0px -30px'});
+
+  document.querySelectorAll('.fade-in, .diagram-box, .card, .step, .code-wrap').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
+    el.style.transition = `opacity .55s ease ${Math.min(i * .035, .24)}s, transform .55s ease ${Math.min(i * .035, .24)}s`;
+    revealObserver.observe(el);
+  });
+
+  const revealStyle = document.createElement('style');
+  revealStyle.textContent = `
+    .is-visible{opacity:1!important;transform:none!important}
+  `;
+  document.head.appendChild(revealStyle);
+</script>
+</body>
+</html>
