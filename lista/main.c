@@ -19,12 +19,12 @@ int main(void) {
         return 1;
     }
 
-    /* Utilize as funções da lista aqui. */
     struct aluno a1 = {1, "Bianca", 8.5, 9.0, 7.5};
     struct aluno a2 = {2, "Andre", 7.0, 8.5, 9.0};
     struct aluno a3 = {3, "Ana", 9.0, 8.0, 9.5};
     struct aluno a4 = {4, "Ricardo", 8.0, 7.5, 8.5};
 
+    /* Utilize as funções da lista aqui. */
     insere_lista_final(li, a1);
     insere_lista_final(li, a2);
     insere_lista_final(li, a3);

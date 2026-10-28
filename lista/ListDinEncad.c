@@ -70,11 +70,9 @@ int tamanho_lista(Lista* li) {
 /*
  * Uma lista encadeada dinâmica não possui capacidade máxima
  * predefinida. Retorna 0 (não cheia).
- *
- * A alocação de cada novo nó ainda pode falhar; por isso,
- * as funções de inserção verificam o retorno de malloc().
  */
 int lista_cheia(Lista* li) {
+    /* Implementar com capacidade máxima definida na constante MAX*/
     (void) li;
     return 0;
 }

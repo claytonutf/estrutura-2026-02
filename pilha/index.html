@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pilha dinâmica encadeada</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{--bg:#f6f9fc;--surf:#fff;--ink:#17283d;--mut:#5a6b80;--line:#d9e2ec;--acc:#0b6e8a;--acc2:#e0f1f6;--top:#f2a900;--top2:#fff4d6;--ok:#1f8a4c;--bad:#c23a3a;--code:#0f2236;--codeink:#dbe8f5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.06rem/1.65 "Source Sans 3",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0 0 .5em}
+h1{font-size:clamp(2.1rem,6vw,3.6rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.5vw,2rem);font-weight:700;margin-top:0}
+h3{font-size:1.15rem;font-weight:700}
+p{max-width:68ch;margin:0 0 1em}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.hero{background:linear-gradient(180deg,#fff,#eaf4f8);border-bottom:1px solid var(--line);padding:56px 0 44px}
+.hero p.lead{font-size:1.2rem;color:var(--mut)}
+section{padding:44px 0;border-bottom:1px solid var(--line)}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pro{border-left:5px solid var(--ok)}.con{border-left:5px solid var(--bad)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;background:var(--acc2);padding:1px 5px;border-radius:5px}
+pre{margin:0;background:var(--code);color:var(--codeink);padding:16px;border-radius:0 0 12px 12px;overflow-x:auto;font:.88rem/1.55 ui-monospace,Menlo,Consolas,monospace}
+pre code{background:none;padding:0;font-size:inherit}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;background:var(--code);padding:10px 10px 0;border-radius:12px 12px 0 0}
+button{font:inherit;cursor:pointer}
+.tab{background:transparent;color:#9fb6cc;border:0;padding:8px 12px;border-radius:8px 8px 0 0}
+.tab[aria-selected=true]{background:#17314b;color:#fff}
+.note{background:var(--acc2);border-radius:10px;padding:12px 16px;margin:14px 0;max-width:68ch}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--top);outline-offset:2px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:600}
+.btn.alt{background:#fff;color:var(--acc);border:1.5px solid var(--acc)}
+.btn.warn{background:#fff;color:var(--bad);border:1.5px solid var(--bad)}
+.btn:hover{filter:brightness(.95)}
+.sim{display:grid;gap:18px;grid-template-columns:1fr 1.2fr}
+@media(max-width:800px){.sim{grid-template-columns:1fr}}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.stage{min-height:300px;display:flex;flex-direction:column;gap:0;align-items:stretch}
+.ptr{display:flex;align-items:center;gap:8px;font:600 .9rem ui-monospace,Menlo,monospace;color:var(--top);background:var(--top2);border:1.5px dashed var(--top);border-radius:10px;padding:8px 12px;margin-bottom:6px}
+.node{display:grid;grid-template-columns:1fr auto;border:2px solid var(--acc);border-radius:10px;background:#fff;overflow:hidden;animation:in .35s ease}
+.node.first{border-color:var(--top);box-shadow:0 0 0 3px var(--top2)}
+.node .d{padding:8px 12px}
+.node .d b{display:block}.node .d small{color:var(--mut);font-family:ui-monospace,monospace}
+.node .p{background:var(--acc2);padding:8px 12px;font:.85rem ui-monospace,monospace;display:flex;flex-direction:column;justify-content:center;text-align:center;min-width:104px}
+.arrow{text-align:center;color:var(--acc);font-size:1.1rem;line-height:1.2}
+.null{align-self:center;font:600 .9rem ui-monospace,monospace;color:var(--mut);border:2px solid var(--line);border-radius:8px;padding:4px 14px;background:#fff}
+.gone{animation:out .35s ease forwards}
+@keyframes in{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@keyframes out{to{opacity:0;transform:translateX(40px)}}
+@media(prefers-reduced-motion:reduce){.node,.gone{animation:none}}
+.log{font:.88rem/1.5 ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-height:190px;overflow:auto;margin-top:12px}
+.log div{padding:2px 0;border-bottom:1px dashed var(--line)}
+.log .e{color:var(--bad)}.log .s{color:var(--ok)}
+.stat{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.stat span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.92rem}
+label.chk{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:.95rem}
+table{border-collapse:collapse;width:100%;background:#fff;border-radius:10px;overflow:hidden}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left}th{background:var(--acc2)}
+.scroll{overflow-x:auto}
+.q{margin-bottom:18px}.q p{font-weight:600;margin-bottom:8px}
+.opt{display:block;width:100%;text-align:left;background:#fff;color:var(--ink);font-weight:400;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}
+.opt:hover{border-color:var(--acc)}
+.opt.right{border-color:var(--ok);background:#e8f6ee;color:#0f4d2a}.opt.wrong{border-color:var(--bad);background:#fbeaea;color:#7a1d1d}
+.fb{font-size:.95rem;color:var(--ink);margin-top:4px}
+footer{padding:36px 0 48px;text-align:center;color:var(--mut)}
+footer strong{color:var(--ink)}
+.layers{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+@media(max-width:640px){.layers{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+<h1>Pilha dinâmica encadeada</h1>
+<p class="lead">Elementos alocados com <code>malloc()</code> à medida que entram no topo e liberados com <code>free()</code> à medida que saem. Explore, empilhe e desempilhe de verdade.</p>
+</div></header>
+
+<main class="wrap">
+<section>
+<h2>O que é</h2>
+<p>Uma pilha dinâmica encadeada é definida com <strong>alocação dinâmica</strong> e <strong>acesso encadeado</strong>. Cada elemento é uma estrutura com dois campos: <code>dados</code>, que guarda a informação inserida, e <code>prox</code>, um ponteiro para o próximo elemento da pilha.</p>
+<p>Além dos elementos, a pilha usa um <strong>ponteiro para ponteiro</strong> para guardar o “topo”. Assim, para trocar o primeiro elemento basta mudar o conteúdo desse ponteiro. O último elemento aponta para <code>NULL</code>, pois depois dele não há nada alocado.</p>
+<div class="note">Uma pilha vazia é aquela em que <code>*pi == NULL</code>.</div>
+<div class="grid">
+<div class="card pro"><h3>Vantagem</h3><p>Melhor uso da memória: não é preciso definir o tamanho da pilha previamente.</p></div>
+<div class="card con"><h3>Desvantagem</h3><p>Para destruir a pilha (e para saber seu tamanho) é preciso percorrê-la inteira.</p></div>
+</div>
+<p style="margin-top:16px">Use quando não há necessidade de garantir um espaço mínimo para a aplicação ou quando o tamanho máximo da pilha não é bem definido.</p>
+</section>
+
+<section>
+<h2>Simulador interativo</h2>
+<p>Cada elemento mostra o campo de dados (struct aluno), o campo <code>prox</code> e um endereço fictício. O topo é sempre o primeiro elemento, apontado por <code>*pi</code>.</p>
+<div class="sim">
+<div class="card">
+<div class="ctrl">
+<button class="btn" id="bPush">Inserir (push)</button>
+<button class="btn alt" id="bPop">Remover (pop)</button>
+<button class="btn alt" id="bTop">Acessar topo</button>
+</div>
+<div class="ctrl">
+<button class="btn alt" id="bSize">Tamanho</button>
+<button class="btn alt" id="bEmpty">Está vazia?</button>
+<button class="btn alt" id="bFull">Está cheia?</button>
+<button class="btn alt" id="bPrint">Imprimir pilha</button>
+<button class="btn warn" id="bFree">Destruir pilha</button>
+</div>
+<label class="chk"><input type="checkbox" id="oom"> Simular memória esgotada (malloc retorna NULL)</label>
+<div class="stat"><span>Elementos: <b id="nEl">0</b></span><span>Cheia? <b>sempre 0</b></span></div>
+<div class="log" id="log" aria-live="polite"></div>
+</div>
+<div class="card stage" id="stage" aria-label="Visualização da pilha"></div>
+</div>
+</section>
+
+<section>
+<h2>Tipo opaco e modularização</h2>
+<p>O usuário só enxerga um ponteiro do tipo <code>Pilha*</code>. Ele não sabe como a pilha foi implementada e só acessa as funções que a manipulam. Por isso, trocar a implementação não afeta o programa que a utiliza.</p>
+<div class="layers">
+<div class="card"><h3>PilhaDin.h (visível)</h3><p>Define <code>struct aluno</code>, o novo nome <code>typedef struct elemento* Pilha</code> e as funções disponíveis.</p></div>
+<div class="card"><h3>PilhaDin.c (oculto)</h3><p>Define <code>struct elemento</code> (com <code>dados</code> e <code>prox</code>) e implementa as funções do .h.</p></div>
+</div>
+<p style="margin-top:14px">O <code>typedef</code> esconde um dos ponteiros: <code>Pilha* pi;</code> serve tanto para a pilha sequencial estática (ponteiro) quanto para a dinâmica encadeada (ponteiro para ponteiro).</p>
+</section>
+
+<section>
+<h2>Código em C, função por função</h2>
+<div role="tablist" class="tabs" id="tabs"></div>
+<pre><code id="code"></code></pre>
+<div class="note" id="codeNote"></div>
+</section>
+
+<section>
+<h2>Complexidade das operações</h2>
+<div class="scroll"><table>
+<tr><th>Operação</th><th>Como funciona</th><th>Custo</th></tr>
+<tr><td>Inserir</td><td>aloca o nó e troca ponteiros</td><td>O(1)</td></tr>
+<tr><td>Remover</td><td>avança o topo e libera o nó</td><td>O(1)</td></tr>
+<tr><td>Acessar topo</td><td>lê o primeiro elemento</td><td>O(1)</td></tr>
+<tr><td>Tamanho</td><td>percorre toda a pilha contando</td><td>O(n)</td></tr>
+<tr><td>Destruir</td><td>percorre liberando cada nó</td><td>O(n)</td></tr>
+<tr><td>Imprimir</td><td>percorre do topo até NULL</td><td>O(n)</td></tr>
+</table></div>
+<p style="margin-top:14px">Inserção, remoção e consulta mexem só em alguns ponteiros, independentemente do número de elementos.</p>
+</section>
+
+<section>
+<h2>Pilha implementada com lista</h2>
+<p>Uma pilha é uma lista sujeita a uma ordem de entrada e saída, com inserção e remoção sempre na mesma extremidade. Por isso, dá para encapsular as funções da lista dinâmica encadeada:</p>
+<div class="grid">
+<div class="card"><h3>Consulta</h3><p>Sempre o primeiro elemento da lista.</p></div>
+<div class="card"><h3>Inserção</h3><p>Sempre no início da lista.</p></div>
+<div class="card"><h3>Remoção</h3><p>Sempre no início da lista.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Teste seus conhecimentos</h2>
+<div id="quiz"></div>
+</section>
+</main>
+
+<footer><div class="wrap"><strong>Prof Clayton Kossoski</strong><br>Universidade Tecnológica Federal do Paraná</div></footer>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const names=["Ana Lima","Bruno Costa","Carla Dias","Diego Souza","Elisa Rocha","Fábio Alves","Gabi Nunes","Hugo Reis"];
+const ini=[[1,"Bianca","8.50 9.00 7.50"],[2,"Andre","7.00 8.50 9.00"],[3,"Ana","9.00 8.00 9.50"],[4,"Ricardo","8.00 7.50 8.50"]];
+let stack=[],counter=5;
+const addr=()=>"0x"+(0x5a00+Math.floor(Math.random()*0x3f0)*16).toString(16);
+function log(m,c){const d=document.createElement("div");if(c)d.className=c;d.textContent=m;const l=$("log");l.prepend(d);}
+function draw(removedEl){
+ const s=$("stage");s.innerHTML="";
+ const p=document.createElement("div");p.className="ptr";
+ p.textContent="*pi (topo) → "+(stack.length?stack[0].a:"NULL");s.appendChild(p);
+ stack.forEach((n,i)=>{
+  const e=document.createElement("div");e.className="node"+(i===0?" first":"");
+  if(n.fresh){n.fresh=false}else{e.style.animation="none"}
+  e.innerHTML='<div class="d"><b></b><small></small></div><div class="p"><span>prox</span><b></b></div>';
+  e.querySelector(".d b").textContent=n.nome;
+  e.querySelector(".d small").textContent="mat. "+n.mat+" · notas "+n.notas+" · "+n.a;
+  e.querySelector(".p b").textContent=stack[i+1]?stack[i+1].a:"NULL";
+  s.appendChild(e);
+  const ar=document.createElement("div");ar.className="arrow";ar.textContent=i<stack.length-1?"↓":"↓";s.appendChild(ar);
+ });
+ const nl=document.createElement("div");nl.className="null";nl.textContent="NULL";s.appendChild(nl);
+ $("nEl").textContent=stack.length;
+}
+$("bPush").onclick=()=>{
+ if($("oom").checked){log("malloc() retornou NULL → insere retorna 0 (pilha cheia)","e");return}
+ const mat=counter++,nome=names[(mat-1)%names.length];
+ const notas=[0,0,0].map(()=>(5+Math.random()*5).toFixed(2)).join(" ");
+ stack.unshift({mat,nome,notas,a:addr(),fresh:true});
+ log("malloc ok; no->prox = *pi; *pi = no → "+nome+" é o novo topo","s");draw();
+};
+$("bPop").onclick=()=>{
+ if(!stack.length){log("pilha vazia → remove retorna 0","e");return}
+ const r=stack.shift();log("*pi = no->prox; free(no) → saiu "+r.nome,"s");draw();
+};
+$("bTop").onclick=()=>{
+ if(!stack.length){log("pilha vazia → consulta retorna 0","e");return}
+ log("*al = (*pi)->dados → "+stack[0].nome+" (mat. "+stack[0].mat+")","s");
+};
+$("bSize").onclick=()=>log("percorreu "+stack.length+" nó(s) com cont++ → retorna "+stack.length,"s");
+$("bEmpty").onclick=()=>log(stack.length?"*pi != NULL → retorna 0":"*pi == NULL → retorna 1");
+$("bFull").onclick=()=>log("Pilha_cheia() retorna sempre 0; só malloc() == NULL impede inserir");
+$("bPrint").onclick=()=>{
+ if(!stack.length){log("Pilha vazia.");return}
+ stack.slice().reverse().forEach((n,i,a)=>log((a.length-i)+"º do topo: mat. "+n.mat+", "+n.nome+", notas "+n.notas));
+ log("=== ALUNOS NA PILHA ===");
+};
+$("bFree").onclick=()=>{
+ const n=stack.length;stack=[];log("free() em "+n+" nó(s), depois free(pi). Em uma pilha real, pi não deve mais ser usado.","s");draw();
+};
+ini.forEach(r=>stack.unshift({mat:r[0],nome:r[1],notas:r[2],a:addr()}));draw();log("main: cria_Pilha() e 4 insere_Pilha(): Bianca, Andre, Ana, Ricardo. Topo = Ricardo");
+
+const codes={
+"PilhaDin.h":{c:`#ifndef PILHA_DIN_H
+#define PILHA_DIN_H
+
+struct aluno {
+    int matricula;
+    char nome[30];
+    float n1, n2, n3;
+};
+
+typedef struct elemento *Pilha;
+
+Pilha *cria_Pilha(void);
+void libera_Pilha(Pilha *pi);
+
+int acessa_topo_Pilha(const Pilha *pi, struct aluno *al);
+int insere_Pilha(Pilha *pi, struct aluno al);
+int remove_Pilha(Pilha *pi);
+
+int tamanho_Pilha(const Pilha *pi);
+int Pilha_vazia(const Pilha *pi);
+int Pilha_cheia(const Pilha *pi);
+
+void imprime_Pilha(const Pilha *pi);
+
+#endif`,n:"O .h expõe só o necessário. As funções de consulta recebem const Pilha *, pois não alteram a pilha."},
+"PilhaDin.c":{c:`#include <stdio.h>
+#include <stdlib.h>
+#include "PilhaDin.h"
+
+struct elemento {
+    struct aluno dados;
+    struct elemento *prox;
+};
+
+typedef struct elemento Elem;`,n:"A struct elemento fica escondida no .c. O restante deste arquivo é mostrado nas abas seguintes."},
+"Criar":{c:`Pilha *cria_Pilha(void)
+{
+    Pilha *pi = malloc(sizeof *pi);
+
+    if (pi != NULL)
+        *pi = NULL;
+
+    return pi;
+}`,n:"Aloca espaço para o endereço do topo e o inicializa com NULL: pilha vazia."},
+"Destruir":{c:`void libera_Pilha(Pilha *pi)
+{
+    if (pi == NULL)
+        return;
+
+    Elem *no = *pi;
+
+    while (no != NULL) {
+        Elem *proximo = no->prox;
+        free(no);
+        no = proximo;
+    }
+
+    free(pi);
+}`,n:"Guarda o próximo nó antes de liberar o atual, percorre toda a pilha e, por fim, libera o ponteiro do topo."},
+"Tamanho":{c:`int tamanho_Pilha(const Pilha *pi)
+{
+    if (pi == NULL)
+        return 0;
+
+    int cont = 0;
+    const Elem *no = *pi;
+
+    while (no != NULL) {
+        cont++;
+        no = no->prox;
+    }
+
+    return cont;
+}`,n:"Não há campo com a quantidade, então é preciso contar percorrendo a pilha."},
+"Cheia/Vazia":{c:`int Pilha_cheia(const Pilha *pi)
+{
+    /*
+     * A pilha dinâmica não possui capacidade máxima fixa.
+     * A inserção pode falhar caso não haja memória disponível.
+     */
+    (void)pi;
+    return 0;
+}
+
+int Pilha_vazia(const Pilha *pi)
+{
+    return pi == NULL || *pi == NULL;
+}`,n:"A pilha dinâmica só falha por falta de memória, então Pilha_cheia sempre retorna 0. Já Pilha_vazia também trata pilha inválida (NULL) como vazia."},
+"Inserir":{c:`int insere_Pilha(Pilha *pi, struct aluno al)
+{
+    if (pi == NULL)
+        return 0;
+
+    Elem *no = malloc(sizeof *no);
+
+    if (no == NULL)
+        return 0;
+
+    no->dados = al;
+    no->prox = *pi;
+    *pi = no;
+
+    return 1;
+}`,n:"O novo nó aponta para o antigo topo e depois vira o topo. É como inserir no início de uma lista."},
+"Remover":{c:`int remove_Pilha(Pilha *pi)
+{
+    if (pi == NULL || *pi == NULL)
+        return 0;
+
+    Elem *no = *pi;
+
+    *pi = no->prox;
+
+    free(no);
+
+    return 1;
+}`,n:"O topo avança para o próximo e a memória do antigo topo é liberada."},
+"Acessar topo":{c:`int acessa_topo_Pilha(const Pilha *pi, struct aluno *al)
+{
+    if (pi == NULL || *pi == NULL || al == NULL)
+        return 0;
+
+    *al = (*pi)->dados;
+
+    return 1;
+}`,n:"Em uma pilha só o elemento do topo pode ser acessado. Também se valida o ponteiro al."},
+"Imprimir":{c:`void imprime_Pilha(const Pilha *pi)
+{
+    if (Pilha_vazia(pi)) {
+        printf("Pilha vazia.\\n");
+        return;
+    }
+
+    const Elem *no = *pi;
+
+    printf("\\n=== ALUNOS NA PILHA ===\\n");
+
+    while (no != NULL) {
+        printf(
+            "Matricula: %d\\n"
+            "Nome: %s\\n"
+            "Notas: %.2f %.2f %.2f\\n"
+            "-------------------------\\n",
+            no->dados.matricula,
+            no->dados.nome,
+            no->dados.n1,
+            no->dados.n2,
+            no->dados.n3
+        );
+
+        no = no->prox;
+    }
+}`,n:"Percorre do topo até NULL sem alterar a pilha, por isso usa ponteiros const."},
+"main.c":{c:`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "PilhaDin.h"
+
+static void limpa_linha(void)
+{
+    int c;
+
+    while ((c = getchar()) != '\\n' && c != EOF)
+        ;
+}
+
+static void mostra_aluno(struct aluno al)
+{
+    printf(
+        "Matricula: %d\\n"
+        "Nome: %s\\n"
+        "Notas: %.2f %.2f %.2f\\n",
+        al.matricula, al.nome, al.n1, al.n2, al.n3
+    );
+}
+
+static int le_aluno(struct aluno *al)
+{
+    printf("Matricula: ");
+
+    if (scanf("%d", &al->matricula) != 1) {
+        limpa_linha();
+        return 0;
+    }
+    limpa_linha();
+
+    printf("Nome: ");
+
+    if (fgets(al->nome, sizeof(al->nome), stdin) == NULL)
+        return 0;
+
+    /* Remove o '\\n' armazenado pelo fgets(). */
+    size_t tamanho = strlen(al->nome);
+
+    if (tamanho > 0 && al->nome[tamanho - 1] == '\\n') {
+        al->nome[tamanho - 1] = '\\0';
+    } else {
+        /* Descarta o restante da linha se o nome for longo. */
+        limpa_linha();
+    }
+
+    printf("Notas (n1 n2 n3): ");
+
+    if (scanf("%f %f %f", &al->n1, &al->n2, &al->n3) != 3) {
+        limpa_linha();
+        return 0;
+    }
+    limpa_linha();
+
+    return 1;
+}
+
+int main(void)
+{
+    Pilha *pi = cria_Pilha();
+
+    if (pi == NULL) {
+        printf("Erro ao criar a pilha.\\n");
+        return 1;
+    }
+
+    struct aluno a1 = {1, "Bianca", 8.5, 9.0, 7.5};
+    struct aluno a2 = {2, "Andre", 7.0, 8.5, 9.0};
+    struct aluno a3 = {3, "Ana", 9.0, 8.0, 9.5};
+    struct aluno a4 = {4, "Ricardo", 8.0, 7.5, 8.5};
+
+    if (!insere_Pilha(pi, a1) ||
+        !insere_Pilha(pi, a2) ||
+        !insere_Pilha(pi, a3) ||
+        !insere_Pilha(pi, a4)) {
+
+        printf("Erro ao inserir os alunos iniciais.\\n");
+        libera_Pilha(pi);
+        return 1;
+    }
+
+    printf("Quatro alunos foram inseridos inicialmente.\\n");
+
+    int op = -1;
+    struct aluno al;
+
+    do {
+        printf(
+            "\\n=== PILHA DE ALUNOS ===\\n"
+            "1 - Inserir\\n"
+            "2 - Remover\\n"
+            "3 - Consultar topo\\n"
+            "4 - Tamanho\\n"
+            "5 - Pilha vazia?\\n"
+            "6 - Pilha cheia?\\n"
+            "7 - Imprimir pilha\\n"
+            "0 - Sair\\n"
+            "Opcao: "
+        );
+
+        if (scanf("%d", &op) != 1) {
+            limpa_linha();
+            printf("Opcao invalida.\\n");
+            op = -1;
+            continue;
+        }
+        limpa_linha();
+
+        switch (op) {
+        case 1:
+            if (le_aluno(&al) && insere_Pilha(pi, al))
+                printf("Aluno inserido.\\n");
+            else
+                printf("Falha ao inserir aluno.\\n");
+            break;
+        case 2:
+            if (remove_Pilha(pi))
+                printf("Elemento removido.\\n");
+            else
+                printf("Pilha vazia, nada removido.\\n");
+            break;
+        case 3:
+            if (acessa_topo_Pilha(pi, &al))
+                mostra_aluno(al);
+            else
+                printf("Pilha vazia.\\n");
+            break;
+        case 4:
+            printf("Tamanho: %d\\n", tamanho_Pilha(pi));
+            break;
+        case 5:
+            if (Pilha_vazia(pi))
+                printf("Pilha vazia.\\n");
+            else
+                printf("Pilha NAO esta vazia.\\n");
+            break;
+        case 6:
+            if (Pilha_cheia(pi))
+                printf("Pilha cheia.\\n");
+            else
+                printf("Pilha NAO esta cheia.\\n");
+            break;
+        case 7:
+            imprime_Pilha(pi);
+            break;
+        case 0:
+            printf("Encerrando o programa.\\n");
+            break;
+        default:
+            printf("Opcao invalida.\\n");
+        }
+
+    } while (op != 0);
+
+    libera_Pilha(pi);
+
+    return 0;
+}`,n:"Programa de teste: cria a pilha, insere quatro alunos (Ricardo fica no topo) e oferece um menu com todas as operações."}
+};
+const tb=$("tabs");let first=true;
+Object.keys(codes).forEach(k=>{
+ const b=document.createElement("button");b.className="tab";b.role="tab";b.textContent=k;
+ b.onclick=()=>{tb.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t===b));$("code").textContent=codes[k].c;$("codeNote").textContent=codes[k].n};
+ tb.appendChild(b);if(first){b.click();first=false}
+});
+
+const qs=[
+ {q:"Por que a pilha usa um ponteiro para ponteiro no topo?",o:["Para gastar menos memória","Para poder mudar quem é o primeiro elemento alterando só o conteúdo desse ponteiro","Para impedir o uso de malloc"],a:1,f:"Mudar o conteúdo do ponteiro para ponteiro troca o topo sem alterar o endereço da pilha."},
+ {q:"Quando uma pilha dinâmica encadeada é considerada cheia?",o:["Quando tem 100 elementos","Quando *pi é NULL","Quando malloc() retorna NULL, por falta de memória"],a:2,f:"Não há tamanho máximo definido: só a falta de memória impede a inserção."},
+ {q:"Qual é a complexidade da inserção no topo?",o:["O(1)","O(n)","O(n²)"],a:0,f:"Só alguns ponteiros mudam, independentemente do número de elementos."},
+ {q:"Qual é a principal desvantagem dessa pilha?",o:["Precisa definir o tamanho antes","É preciso percorrer toda a pilha para destruí-la","Não permite inserção"],a:1,f:"Cada nó precisa de um free(), então a destruição percorre todos os elementos."}
+];
+const qz=$("quiz");
+qs.forEach((x,i)=>{
+ const d=document.createElement("div");d.className="q";
+ d.innerHTML="<p></p>";d.firstChild.textContent=(i+1)+". "+x.q;
+ const fb=document.createElement("div");fb.className="fb";
+ x.o.forEach((t,j)=>{const b=document.createElement("button");b.className="opt";b.textContent=t;
+  b.onclick=()=>{d.querySelectorAll(".opt").forEach(o=>o.classList.remove("right","wrong"));
+   b.classList.add(j===x.a?"right":"wrong");fb.textContent=(j===x.a?"Correto. ":"Tente de novo. ")+(j===x.a?x.f:"")};
+  d.appendChild(b)});
+ d.appendChild(fb);qz.appendChild(d);
+});
+})();
+</script>
+</body>
+</html>
