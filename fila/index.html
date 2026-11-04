@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Material didático sobre filas em estruturas de dados, com implementação dinâmica encadeada em linguagem C.">
+<title>Filas em C — Estruturas de Dados</title>
+<style>
+:root{--bg:#f4f7f6;--paper:#fff;--ink:#16262c;--muted:#52656c;--primary:#0e6a8c;--pd:#0a4d66;--soft:#e4f1f6;--line:#d8e2e5;--green:#0f7a55;--amber:#b45309;--violet:#6d3fc0;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:16px}body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.75 system-ui,-apple-system,"Segoe UI",sans-serif}
+#bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--primary);z-index:20}
+header{background:#fff;border-bottom:1px solid var(--line);background-image:radial-gradient(#cfdde2 1px,transparent 1px);background-size:22px 22px;padding:60px 22px 46px}
+.hero,.layout{max-width:1120px;margin:auto}.eyebrow{color:var(--primary);font-weight:700;font-size:.95rem}
+.hero h1{font:700 clamp(3rem,8vw,5.4rem)/1 Georgia,"Iowan Old Style","Palatino Linotype",serif;letter-spacing:-.02em;margin:.2rem 0 1rem;color:var(--ink)}
+.hero p{max-width:720px;font-size:1.15rem;color:#34484f;margin:0}.hero p code{background:var(--soft);padding:1px 6px;border-radius:5px}
+.hero .byline{margin-top:16px;font-size:.95rem;color:var(--muted)}.tagrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}.tag{border:1px solid var(--primary);color:var(--pd);background:#fff;border-radius:999px;padding:4px 13px;font-size:.86rem;font-weight:600}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;padding:30px 20px 70px}
+nav{align-self:start;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:var(--paper);padding:18px;border:1px solid var(--line);border-radius:14px}nav strong{display:block;margin-bottom:8px}
+nav a{display:block;color:var(--muted);text-decoration:none;padding:6px 9px;border-radius:8px;font-size:.92rem}nav a.sub{padding-left:22px;font-size:.86rem}nav a:hover{background:var(--soft);color:var(--pd)}nav a.on{background:var(--soft);color:var(--pd);font-weight:700}
+main{min-width:0}.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:clamp(20px,3.2vw,36px);margin-bottom:22px}
+h2{font:700 clamp(1.5rem,3vw,1.95rem)/1.25 Georgia,"Iowan Old Style",serif;margin:0 0 16px}h3{font-size:1.12rem;margin:28px 0 8px;color:var(--pd)}p{margin:0 0 14px;max-width:75ch}p:last-child{margin-bottom:0}.lead{font-size:1.1rem;color:#2c3f46}
+.callout{border-left:4px solid var(--primary);background:var(--soft);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0;max-width:75ch}.callout strong{color:var(--pd)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}.mini{padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:#fbfdfd}.mini h3{margin:0 0 6px}.mini p{font-size:.95rem}
+.badge{display:inline-block;background:var(--soft);color:var(--pd);font-weight:700;font-size:.8rem;border-radius:6px;padding:2px 8px;margin-bottom:8px}
+pre{overflow:auto;background:#eef3f5;color:#16262c;border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:10px;padding:16px 18px;font:.88rem/1.65 var(--mono);margin:12px 0 18px}code{font-family:var(--mono)}.inline{background:var(--soft);padding:2px 6px;border-radius:5px;color:var(--pd);font-size:.9em}
+.fname{display:inline-block;background:var(--primary);color:#fff;font:700 .8rem var(--mono);border-radius:7px 7px 0 0;padding:3px 11px;margin-top:8px;margin-bottom:-12px;position:relative}
+.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}th{background:#eff5f6}
+ul,ol{padding-left:24px}li{margin:5px 0}.note{color:var(--muted);font-size:.92rem}
+.complexity{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.complexity div{padding:15px;border-radius:10px;background:#e8f5ef;text-align:center}.complexity b{display:block;font:700 1.5rem Georgia,serif;color:var(--green)}
+.footer{max-width:1120px;margin:0 auto;padding:22px 20px 35px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem;line-height:1.6}
+.sim{border:1px solid var(--line);border-radius:12px;background:#fbfdfd;padding:18px;margin:18px 0}
+.sim-top{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;align-items:center}
+.desc{border:2px solid var(--ink);border-radius:10px;font:.82rem/1.6 var(--mono);padding:10px 12px;background:#fff}.desc b{display:block;margin-bottom:2px}.desc div{display:flex;justify-content:space-between;gap:8px}
+.track{overflow-x:auto}.row{display:flex;align-items:flex-end;min-height:120px;padding:6px 4px;width:max-content}
+.col{display:flex;flex-direction:column;align-items:center;gap:6px}.tags{min-height:58px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}
+.chip{font:700 .72rem var(--mono);border-radius:999px;padding:2px 9px;color:#fff}.chip.i{background:var(--green)}.chip.f{background:var(--amber)}.chip.n{background:var(--violet)}
+.cell{display:flex;border:2px solid var(--primary);border-radius:8px;background:#fff;overflow:hidden;font-weight:700;height:44px;align-items:stretch}.cell .d{padding:0 14px;min-width:52px;display:grid;place-items:center}.cell .p{width:26px;border-left:2px solid var(--primary);background:var(--soft)}
+.cell.dash{border-style:dashed}.cell.freed{opacity:.45;text-decoration:line-through;border-color:#b42318}
+.arr{align-self:flex-end;height:44px;display:grid;place-items:center;color:var(--primary);font-weight:700;padding:0 7px}.nul{align-self:flex-end;height:44px;display:grid;place-items:center;font:700 .85rem var(--mono);color:var(--muted)}.gap{width:34px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.controls input{min-width:120px;flex:1;border:1px solid #b8c8cd;border-radius:9px;padding:10px;font:inherit}
+.btn{border:0;border-radius:9px;padding:10px 15px;background:var(--primary);color:#fff;font:700 .93rem system-ui;cursor:pointer}.btn:hover{background:var(--pd)}.btn.secondary{background:#e3edf0;color:#1f3a44}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.controls input:focus-visible,.opt:focus-visible,nav a:focus-visible{outline:3px solid #7cc4e0;outline-offset:2px}
+.sim-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;margin-top:14px;align-items:start}
+#stepText{background:var(--soft);border-radius:10px;padding:14px 16px;font-size:.95rem;min-height:84px}.codebox{margin:0;padding:10px 6px;font-size:.8rem;border-left-width:4px}.ln{display:block;padding:0 10px;border-radius:4px;white-space:pre}.ln.on{background:#fff0b8;font-weight:700}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:.85rem;color:var(--muted);align-items:center}
+.qz{padding:14px 0;border-bottom:1px solid var(--line)}.qz:last-child{border:0}.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;cursor:pointer}.opt:hover{background:var(--soft)}.opt.ok{background:#dff3e9;border-color:var(--green)}.opt.no{background:#fde8e6;border-color:#b42318}.fb{min-height:1.4em;color:var(--muted);font-size:.92rem;margin:4px 0 0}
+@media(max-width:850px){.layout{grid-template-columns:1fr}nav{position:static;max-height:none}nav div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.grid2,.sim-top,.sim-info{grid-template-columns:1fr}}
+@media(max-width:480px){header{padding-top:38px}.complexity{grid-template-columns:1fr}.card{padding:18px}nav div{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<header><div class="hero">
+<div class="eyebrow">Estruturas de dados · Linguagem C</div>
+<h1>Filas</h1>
+<p>Entenda o princípio FIFO, explore as operações fundamentais e estude uma implementação dinâmica encadeada em C, organizada em arquivos <code>.h</code> e <code>.c</code>.</p>
+<p class="byline">Prof. Clayton Kossoski · Universidade Tecnológica Federal do Paraná</p>
+<div class="tagrow"><span class="tag">FIFO</span><span class="tag">Ponteiros</span><span class="tag">Alocação dinâmica</span><span class="tag">TAD</span><span class="tag">Complexidade O(1)</span></div>
+</div></header>
+<div class="layout">
+<nav aria-label="Navegação do conteúdo"><strong>Nesta página</strong><div>
+<a href="#definicao">1. Definição</a><a href="#fifo">2. Princípio FIFO</a>
+<a href="#tipos">3. Tipos de filas</a><a href="#operacoes">4. Operações básicas</a>
+<a href="#arquivos">5. Organização em arquivos</a><a class="sub" href="#header">FilaDin.h</a>
+<a href="#implementacao">6. Implementação (FilaDin.c)</a>
+<a class="sub" href="#criar">Criação</a><a class="sub" href="#destruir">Destruição</a><a class="sub" href="#consultar">Consulta</a><a class="sub" href="#inserir">Inserção</a><a class="sub" href="#remover">Remoção</a><a class="sub" href="#status-fila">Tamanho, vazia, cheia</a><a class="sub" href="#imprimir">Impressão</a>
+<a href="#main">7. Programa principal</a><a class="sub" href="#compilar">Compilação</a>
+<a href="#complexidade">8. Complexidade</a><a href="#erros">9. Erros comuns</a><a href="#quiz">10. Teste rápido</a>
+</div></nav>
+<main>
+
+<section class="card" id="definicao">
+<h2>1. Definição</h2>
+<p class="lead">O conceito de fila, ou fila de espera, faz parte do cotidiano: enfrentamos filas no banco, no cinema e em diversos outros lugares. Na computação, uma fila é um conjunto finito de itens de um mesmo tipo que aguardam um serviço ou processamento.</p>
+<p>Uma fila é uma estrutura de dados linear, isto é, seus elementos formam uma sequência. Diferentemente de uma lista, que permite acesso a diferentes posições conforme sua implementação, a fila estabelece uma ordem para entrada e saída: a inserção acontece em uma extremidade e a remoção na outra.</p>
+<p>Um exemplo comum é o gerenciamento de documentos enviados para uma impressora. Em geral, o primeiro documento enviado é o primeiro a ser impresso. Filas também organizam tarefas, requisições e eventos que aguardam processamento.</p>
+<div class="callout"><strong>Ideia central:</strong> um elemento só pode ser removido depois dos elementos que chegaram antes dele. A fila pode conter <em>N</em> elementos, com <em>N ≥ 0</em>. Quando <em>N = 0</em>, ela está vazia. Dependendo da aplicação, elementos repetidos são permitidos.</div>
+</section>
+
+<section class="card" id="fifo">
+<h2>2. O princípio FIFO</h2>
+<p>Filas seguem o princípio <strong>FIFO</strong> (<em>First In, First Out</em>), que significa “primeiro a entrar, primeiro a sair”. Os elementos são removidos na mesma ordem em que foram inseridos.</p>
+<p>Execute a operação <strong>passo a passo</strong>: a cada clique, a linha do código em destaque e os ponteiros do desenho mudam juntos.</p>
+<div class="sim">
+<div class="sim-top"><div class="desc" id="desc"></div><div class="track"><div class="row" id="row"></div></div></div>
+<div class="legend"><span class="chip i">inicio</span> primeiro nó <span class="chip f">final</span> último nó <span class="chip n">no</span> ponteiro auxiliar</div>
+<div class="controls">
+<input id="inp" type="text" maxlength="8" placeholder="Valor para inserir" aria-label="Valor para inserir na fila">
+<button class="btn" id="ins">Inserir</button><button class="btn" id="rem">Remover</button>
+<button class="btn secondary" id="next" disabled>Próximo passo</button><button class="btn secondary" id="rst">Reiniciar</button>
+</div>
+<div class="sim-info"><div id="stepText" role="status" aria-live="polite"></div><pre class="codebox" id="codebox" aria-label="Código da operação"></pre></div>
+</div>
+<p class="note">O nó mais à esquerda é sempre o próximo a sair (FIFO). Limite visual: 8 elementos.</p>
+</section>
+
+<section class="card" id="tipos">
+<h2>3. Tipos de implementação</h2>
+<p>As duas implementações clássicas diferem pela forma de alocação da memória e pelo modo de acesso aos elementos.</p>
+<div class="grid2">
+<div class="mini"><span class="badge">Alocação estática</span><h3>Acesso sequencial</h3><p>O espaço é reservado previamente, geralmente em um vetor. É necessário definir a capacidade máxima, e os elementos ficam em posições consecutivas de memória.</p><p><strong>Vantagens:</strong> estrutura simples e acesso direto por índice.</p><p><strong>Atenção:</strong> a capacidade é limitada e a implementação precisa tratar o reaproveitamento das posições.</p></div>
+<div class="mini"><span class="badge">Alocação dinâmica</span><h3>Acesso encadeado</h3><p>A memória é alocada durante a execução. Cada nó armazena o dado e um ponteiro para o próximo nó, portanto os elementos não precisam estar em posições consecutivas.</p><p><strong>Vantagens:</strong> a fila cresce e diminui conforme as inserções e remoções.</p><p><strong>Atenção:</strong> é necessário gerenciar os ponteiros e liberar a memória usada.</p></div>
+</div>
+<p style="margin-top:14px">Este material implementa a <strong>fila dinâmica encadeada</strong>.</p>
+</section>
+
+<section class="card" id="operacoes">
+<h2>4. Operações básicas</h2>
+<ul>
+<li><strong>Criar:</strong> inicializar uma fila vazia.</li>
+<li><strong>Inserir (enqueue):</strong> adicionar um elemento ao final.</li>
+<li><strong>Remover (dequeue):</strong> retirar o elemento do início.</li>
+<li><strong>Consultar o início (front/peek):</strong> ler o primeiro elemento sem removê-lo.</li>
+<li><strong>Obter o tamanho:</strong> consultar quantos elementos existem.</li>
+<li><strong>Verificar se está vazia ou cheia:</strong> consultar o estado da estrutura.</li>
+<li><strong>Imprimir:</strong> percorrer a fila do início ao fim, mostrando os elementos sem alterá-la.</li>
+<li><strong>Destruir:</strong> liberar a memória ocupada pela fila dinâmica e por seus nós.</li>
+</ul>
+<div class="callout">Antes de remover ou consultar o início, verifique se a fila não está vazia. Em uma fila encadeada, “cheia” normalmente significa que não foi possível alocar memória para um novo nó.</div>
+</section>
+
+<section class="card" id="arquivos">
+<h2>5. Organização em arquivos</h2>
+<p>O projeto usa três arquivos, seguindo a ideia de <strong>tipo abstrato de dados (TAD)</strong>: quem usa a fila conhece apenas as operações, não a forma como ela é armazenada.</p>
+<div class="tablewrap"><table>
+<tr><th>Arquivo</th><th>Conteúdo</th></tr>
+<tr><td><code>FilaDin.h</code></td><td>Struct <code>aluno</code>, o tipo <code>Fila</code> e os protótipos das funções.</td></tr>
+<tr><td><code>FilaDin.c</code></td><td>Structs internas (<code>elemento</code> e <code>fila</code>) e a implementação das funções.</td></tr>
+<tr><td><code>main.c</code></td><td>Menu interativo que usa a fila.</td></tr>
+</table></div>
+<h3 id="header">Arquivo FilaDin.h</h3>
+<div class="fname">FilaDin.h</div>
+<pre><code>#ifndef FILADIN_H
+#define FILADIN_H
+
+struct aluno{
+    int matricula;
+    char nome[30];
+    float n1,n2,n3;
+};
+typedef struct fila Fila;
+
+Fila* cria_Fila();
+void libera_Fila(Fila* fi);
+int consulta_Fila(Fila* fi, struct aluno *al);
+int insere_Fila(Fila* fi, struct aluno al);
+int remove_Fila(Fila* fi);
+int tamanho_Fila(Fila* fi);
+int Fila_vazia(Fila* fi);
+int Fila_cheia(Fila* fi);
+void imprime_Fila(Fila* fi);
+
+#endif</code></pre>
+<p>O cabeçalho declara <code class="inline">typedef struct fila Fila;</code> sem mostrar o conteúdo da struct. Assim, o <code class="inline">main.c</code> só consegue manipular a fila pelas funções, o que protege a estrutura de alterações indevidas. Os <em>include guards</em> (<code class="inline">#ifndef</code>, <code class="inline">#define</code>, <code class="inline">#endif</code>) evitam que o arquivo seja incluído duas vezes.</p>
+<p>Cada elemento da fila guarda os dados de um aluno (<code class="inline">struct aluno</code>), mas a lógica da fila não depende disso: para armazenar outro tipo de dado, basta alterar essa struct.</p>
+</section>
+
+<section class="card" id="implementacao">
+<h2>6. Implementação em FilaDin.c</h2>
+<h3>Estruturas internas</h3>
+<div class="fname">FilaDin.c</div>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "FilaDin.h" //inclui os protótipos
+
+//definição do tipo Fila
+struct elemento{
+    struct aluno dados;
+    struct elemento *prox;
+};
+typedef struct elemento Elem;
+
+//definição do nó descritor da fila
+struct fila{
+    struct elemento *inicio;
+    struct elemento *final;
+    int qtd;
+};</code></pre>
+<p>Cada <code class="inline">elemento</code> guarda os dados do aluno e o ponteiro <code class="inline">prox</code> para o próximo nó. No último nó, <code class="inline">prox</code> vale <code class="inline">NULL</code>. O <strong>nó descritor</strong> <code class="inline">fila</code> tem três campos: <code class="inline">inicio</code> (primeiro nó), <code class="inline">final</code> (último nó) e <code class="inline">qtd</code> (quantidade de elementos). Com a fila vazia, <code class="inline">inicio</code> e <code class="inline">final</code> valem <code class="inline">NULL</code> e <code class="inline">qtd</code> vale 0.</p>
+<p>Valores de retorno das funções:</p>
+<div class="tablewrap"><table>
+<tr><th>Função</th><th>Retorno</th></tr>
+<tr><td><code>cria_Fila</code></td><td>Ponteiro para a fila, ou <code>NULL</code> se faltar memória.</td></tr>
+<tr><td><code>insere_Fila</code>, <code>remove_Fila</code>, <code>consulta_Fila</code></td><td>1 se a operação foi feita; 0 se falhou (fila inválida, vazia ou sem memória).</td></tr>
+<tr><td><code>tamanho_Fila</code></td><td>Quantidade de elementos; 0 se a fila for <code>NULL</code>.</td></tr>
+<tr><td><code>Fila_vazia</code></td><td>1 se vazia, 0 se não vazia, -1 se a fila for <code>NULL</code>.</td></tr>
+<tr><td><code>Fila_cheia</code></td><td>Sempre 0: a fila encadeada não tem capacidade fixa.</td></tr>
+</table></div>
+
+<h3 id="criar">Criação da fila</h3>
+<pre><code>// Criando uma fila
+Fila* cria_Fila(){
+    Fila* fi = (Fila*) malloc(sizeof(struct fila));
+    if(fi != NULL){
+        fi-&gt;final = NULL;
+        fi-&gt;inicio = NULL;
+        fi-&gt;qtd = 0;
+    }
+    return fi;
+}</code></pre>
+<p>A função aloca o nó descritor e, se a alocação funcionar, inicializa os ponteiros com <code class="inline">NULL</code> e <code class="inline">qtd</code> com 0. A figura do livro representa exatamente esse estado: <code class="inline">inicio</code> e <code class="inline">final</code> apontando para <code class="inline">NULL</code>.</p>
+
+<h3 id="destruir">Destruindo a fila</h3>
+<pre><code>// Destruindo uma fila
+void libera_Fila(Fila* fi){
+    if(fi != NULL){
+        Elem* no;
+        while(fi-&gt;inicio != NULL){
+            no = fi-&gt;inicio;
+            fi-&gt;inicio = fi-&gt;inicio-&gt;prox;
+            free(no);
+        }
+        free(fi);
+    }
+}</code></pre>
+<p>Percorremos todos os nós liberando cada um com <code class="inline">free</code>: o ponteiro <code class="inline">no</code> guarda o nó atual, o início avança para o próximo e só então o nó é liberado. Ao final, liberamos o nó descritor. Depois de chamar a função, o ponteiro do <code class="inline">main</code> não deve mais ser usado.</p>
+
+<h3 id="consultar">Consultando o início sem remover</h3>
+<pre><code>// Consultando a fila
+int consulta_Fila(Fila* fi, struct aluno *al){
+    if(fi == NULL)
+        return 0;
+    if(fi-&gt;inicio == NULL)//fila vazia
+        return 0;
+    *al = fi-&gt;inicio-&gt;dados;
+    return 1;
+}</code></pre>
+<p>A função copia os dados do primeiro aluno para <code class="inline">*al</code>, sem alterar a fila. Retorna 0 se a fila for inválida ou estiver vazia.</p>
+
+<h3 id="inserir">Inserindo um elemento no final</h3>
+<pre><code>// Inserindo um elemento na fila
+int insere_Fila(Fila* fi, struct aluno al){
+    if(fi == NULL)
+        return 0;
+    Elem *no = (Elem*) malloc(sizeof(Elem));
+    if(no == NULL)
+        return 0;
+    no-&gt;dados = al;
+    no-&gt;prox = NULL;
+    if(fi-&gt;final == NULL)//fila vazia
+        fi-&gt;inicio = no;
+    else
+        fi-&gt;final-&gt;prox = no;
+    fi-&gt;final = no;
+    fi-&gt;qtd++;
+    return 1;
+}</code></pre>
+<p>A função verifica a fila, aloca um novo nó e copia os dados. Como ele será o último, <code class="inline">prox</code> recebe <code class="inline">NULL</code>. Se a fila estava vazia, o novo nó também passa a ser o início; caso contrário, o antigo último nó aponta para ele. Por fim, atualizamos <code class="inline">final</code> e incrementamos <code class="inline">qtd</code>.</p>
+
+<h3 id="remover">Removendo o elemento do início</h3>
+<pre><code>// Removendo um elemento da fila
+int remove_Fila(Fila* fi){
+    if(fi == NULL)
+        return 0;
+    if(fi-&gt;inicio == NULL)//fila vazia
+        return 0;
+    Elem *no = fi-&gt;inicio;
+    fi-&gt;inicio = fi-&gt;inicio-&gt;prox;
+    free(no);
+    if(fi-&gt;inicio == NULL)//fila ficou vazia
+        fi-&gt;final = NULL;
+    fi-&gt;qtd--;
+    return 1;
+}</code></pre>
+<p>A remoção falha se a fila for inválida ou estiver vazia. Caso contrário, guardamos o primeiro nó, avançamos o início para o próximo e liberamos o nó removido. Se não restar nenhum elemento, <code class="inline">final</code> também deve receber <code class="inline">NULL</code>, senão ele apontaria para memória já liberada.</p>
+
+<h3 id="status-fila">Tamanho, fila vazia e fila cheia</h3>
+<pre><code>// Tamanho da fila
+int tamanho_Fila(Fila* fi){
+    if(fi == NULL)
+        return 0;
+    return fi-&gt;qtd;
+}
+
+// Retornando se a fila está vazia
+int Fila_vazia(Fila* fi){
+    if(fi == NULL)
+        return -1;
+    if(fi-&gt;inicio == NULL)
+        return 1;
+    return 0;
+}
+
+// Retornando se a fila está cheia
+int Fila_cheia(Fila* fi){
+    (void)fi; // fila dinâmica nunca fica cheia
+    return 0;
+}</code></pre>
+<p>Como existe o campo <code class="inline">qtd</code>, o tamanho é só um retorno direto. A fila está vazia quando <code class="inline">inicio</code> vale <code class="inline">NULL</code>. <code class="inline">Fila_cheia</code> sempre retorna 0 porque a estrutura não tem limite pré-definido; a falta de memória é detectada pelo <code class="inline">malloc</code> dentro de <code class="inline">insere_Fila</code>.</p>
+
+<h3 id="imprimir">Imprimindo a fila do início ao fim</h3>
+<pre><code>// Imprimindo a fila, do início ao fim
+void imprime_Fila(Fila* fi){
+    if(fi == NULL){
+        printf("Fila nao criada.\n");
+        return;
+    }
+    if(fi-&gt;inicio == NULL){
+        printf("Fila vazia.\n");
+        return;
+    }
+    Elem* no = fi-&gt;inicio;
+    int pos = 1;
+    printf("--- Fila (inicio -&gt; final) ---\n");
+    while(no != NULL){
+        printf("%d) Matricula: %d | Nome: %s | Notas: %.2f %.2f %.2f\n",
+               pos, no-&gt;dados.matricula, no-&gt;dados.nome,
+               no-&gt;dados.n1, no-&gt;dados.n2, no-&gt;dados.n3);
+        no = no-&gt;prox;
+        pos++;
+    }
+}</code></pre>
+<p>Um ponteiro auxiliar começa em <code class="inline">inicio</code> e avança por <code class="inline">prox</code> até chegar a <code class="inline">NULL</code>. A fila não é modificada. Como precisa acessar os campos internos, a função fica em <code class="inline">FilaDin.c</code>.</p>
+</section>
+
+<section class="card" id="main">
+<h2>7. Programa principal</h2>
+<p>O <code class="inline">main.c</code> oferece um menu para testar todas as operações: inserir, remover, consultar o início, ver o tamanho, verificar se a fila está vazia ou cheia, imprimir e sair. Ele inclui apenas <code class="inline">FilaDin.h</code>.</p>
+<div class="fname">main.c</div>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "FilaDin.h"
+
+static void limpa_linha(void){
+    int c;
+    while((c = getchar()) != '\n' &amp;&amp; c != EOF);
+}
+
+static void mostra_aluno(struct aluno al){
+    printf("Matricula: %d\nNome: %s\nNotas: %.2f %.2f %.2f\n",
+           al.matricula, al.nome, al.n1, al.n2, al.n3);
+}
+
+static int le_aluno(struct aluno *al){
+    printf("Matricula: ");
+    if(scanf("%d", &amp;al-&gt;matricula) != 1) return 0;
+    limpa_linha();
+    printf("Nome: ");
+    if(fgets(al-&gt;nome, sizeof(al-&gt;nome), stdin) == NULL) return 0;
+    al-&gt;nome[strcspn(al-&gt;nome, "\n")] = '\0';
+    printf("Notas (n1 n2 n3): ");
+    if(scanf("%f %f %f", &amp;al-&gt;n1, &amp;al-&gt;n2, &amp;al-&gt;n3) != 3) return 0;
+    limpa_linha();
+    return 1;
+}
+
+int main(void){
+    Fila *fi = cria_Fila();
+    if(fi == NULL){
+        printf("Erro ao criar a fila.\n");
+        return 1;
+    }
+
+    int op;
+    struct aluno al;
+    do{
+        printf("\n=== FILA DE ALUNOS ===\n"
+               "1 - Inserir\n"
+               "2 - Remover\n"
+               "3 - Consultar inicio\n"
+               "4 - Tamanho\n"
+               "5 - Fila vazia?\n"
+               "6 - Fila cheia?\n"
+               "7 - Imprimir fila\n"
+               "0 - Sair\n"
+               "Opcao: ");
+        if(scanf("%d", &amp;op) != 1) break;
+        limpa_linha();
+
+        switch(op){
+        case 1:
+            if(le_aluno(&amp;al) &amp;&amp; insere_Fila(fi, al))
+                printf("Aluno inserido.\n");
+            else
+                printf("Falha ao inserir.\n");
+            break;
+        case 2:
+            if(remove_Fila(fi)) printf("Elemento removido.\n");
+            else printf("Fila vazia, nada removido.\n");
+            break;
+        case 3:
+            if(consulta_Fila(fi, &amp;al)) mostra_aluno(al);
+            else printf("Fila vazia.\n");
+            break;
+        case 4:
+            printf("Tamanho: %d\n", tamanho_Fila(fi));
+            break;
+        case 5:
+            printf(Fila_vazia(fi) ? "Fila vazia.\n" : "Fila NAO esta vazia.\n");
+            break;
+        case 6:
+            printf(Fila_cheia(fi) ? "Fila cheia.\n" : "Fila NAO esta cheia.\n");
+            break;
+        case 7:
+            imprime_Fila(fi);
+            break;
+        case 0:
+            break;
+        default:
+            printf("Opcao invalida.\n");
+        }
+    }while(op != 0);
+
+    libera_Fila(fi);
+    return 0;
+}</code></pre>
+<p>Exemplo de saída ao escolher “Imprimir fila” com três alunos inseridos:</p>
+<pre><code>--- Fila (inicio -&gt; final) ---
+1) Matricula: 10 | Nome: Ana Silva | Notas: 7.00 8.00 9.00
+2) Matricula: 20 | Nome: Bruno | Notas: 5.50 6.00 7.00
+3) Matricula: 30 | Nome: Carla | Notas: 10.00 9.00 8.00</code></pre>
+<h3 id="compilar">Compilação e execução</h3>
+<p>Salve os três arquivos na mesma pasta e, no terminal, compile os arquivos <code class="inline">.c</code> juntos. O <code class="inline">.h</code> não entra no comando, pois o <code class="inline">#include</code> já o utiliza.</p>
+<pre><code>gcc -Wall -Wextra -g main.c FilaDin.c -o fila
+./fila</code></pre>
+<p class="note">No Windows com MinGW, o executável é <code class="inline">fila.exe</code>. Sem a opção <code class="inline">-o</code>, o gcc gera <code class="inline">a.out</code>.</p>
+</section>
+
+<section class="card" id="complexidade">
+<h2>8. Análise de complexidade</h2>
+<p>Como a implementação mantém ponteiros para o início e o final e registra a quantidade de elementos, as operações principais não precisam percorrer a fila. Por isso, inserção, remoção e consulta do início têm tempo constante.</p>
+<div class="complexity">
+<div><span>Inserção no final</span><b>O(1)</b></div>
+<div><span>Remoção do início</span><b>O(1)</b></div>
+<div><span>Consulta do início</span><b>O(1)</b></div>
+</div>
+<p style="margin-top:16px">Consultar o tamanho também é <strong>O(1)</strong>, pois basta retornar o campo <code class="inline">qtd</code>. Já a destruição e a impressão percorrem todos os nós, portanto são <strong>O(n)</strong>, em que <em>n</em> é a quantidade de elementos.</p>
+<div class="callout"><strong>Para lembrar:</strong> em uma fila encadeada bem implementada, manter os ponteiros <code class="inline">inicio</code> e <code class="inline">final</code> evita percorrer a estrutura a cada inserção ou remoção.</div>
+</section>
+<section class="card" id="erros">
+<h2>9. Erros comuns</h2>
+<p>Quase todos os erros em filas encadeadas vêm do mesmo lugar: ponteiros que não acompanham a mudança da estrutura.</p>
+<div class="grid3">
+<div class="mini"><h3>Esquecer <code>final = NULL</code></h3><p>Ao remover o último elemento, <code class="inline">final</code> continuaria apontando para um nó já liberado (ponteiro “pendurado”).</p></div>
+<div class="mini"><h3>Não verificar fila vazia</h3><p>Remover ou consultar com <code class="inline">inicio == NULL</code> acessa memória inválida. Teste antes de usar.</p></div>
+<div class="mini"><h3>Ignorar o retorno</h3><p><code class="inline">malloc</code> pode falhar. Confira o retorno de <code class="inline">insere_Fila</code> antes de assumir que deu certo.</p></div>
+<div class="mini"><h3>Esquecer o <code>free</code></h3><p>Nós não liberados causam vazamento de memória. Sempre chame <code class="inline">libera_Fila</code> ao terminar.</p></div>
+<div class="mini"><h3>Usar após liberar</h3><p>Depois de <code class="inline">libera_Fila(fi)</code>, o ponteiro não é mais válido. Não o utilize.</p></div>
+</div>
+</section>
+<section class="card" id="quiz">
+<h2>10. Teste rápido</h2>
+<p>Responda para conferir o que aprendeu.</p>
+<div id="quizBox"></div>
+</section>
+</main>
+</div>
+<footer class="footer"><strong>Prof. Clayton Kossoski</strong><br>Universidade Tecnológica Federal do Paraná<br>Conteúdo produzido a partir do livro texto utilizado na disciplina.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const q=[10,20,30];let op=null,cur='ins';
+const CODE={ins:[[0,'int insere_Fila(Fila* fi, struct aluno al){'],[1,'    Elem *no = malloc(sizeof(Elem));'],[2,'    no->dados = al;'],[2,'    no->prox = NULL;'],[3,'    if(fi->final == NULL) // fila vazia'],[3,'        fi->inicio = no;'],[3,'    else'],[3,'        fi->final->prox = no;'],[4,'    fi->final = no;'],[4,'    fi->qtd++;'],[0,'}']],
+rem:[[0,'int remove_Fila(Fila* fi){'],[1,'    Elem *no = fi->inicio;'],[2,'    fi->inicio = fi->inicio->prox;'],[3,'    free(no);'],[4,'    if(fi->inicio == NULL)'],[4,'        fi->final = NULL;'],[4,'    fi->qtd--;'],[0,'}']]};
+const TXT={ins:['Aloca-se um novo nó com malloc. Ele ainda não faz parte da fila: nada aponta para ele.','Os dados são copiados para o nó e prox recebe NULL, pois ele será o último.','Liga-se o nó à fila: se estava vazia, inicio passa a apontá-lo; senão, o antigo último nó aponta para ele.','final passa a apontar para o novo nó e qtd aumenta em 1. Clique em Concluir.'],
+rem:['no guarda o endereço do primeiro nó, para podermos liberá-lo depois.','inicio avança para o segundo nó (ou NULL, se só havia um).','free(no) devolve a memória do nó removido.','Se a fila ficou vazia, final vira NULL. qtd diminui em 1. Clique em Concluir.']};
+const chip=(c,t)=>`<span class="chip ${c}">${t}</span>`;
+function msg(t){$('stepText').textContent=t}
+function render(){
+  const s=op?op.s:0,I=op&&op.t==='ins',R=op&&op.t==='rem';
+  const list=q.map(v=>({v,c:''}));let ini=q.length?0:null,fin=q.length?q.length-1:null,qtd=q.length,pend=null,no=null;
+  if(I){if(s>=1&&s<3)pend={v:s>=2?op.v:'?',nul:s>=2};if(s>=3){list.push({v:op.v,c:''});if(!q.length)ini=0}if(s>=4){fin=list.length-1;qtd=q.length+1}}
+  if(R){if(s>=1)no=0;if(s>=2)ini=q.length>1?1:null;if(s>=3)list[0].c='freed';if(s>=4){if(q.length===1)fin=null;qtd=q.length-1}}
+  const ref=i=>i===null?'NULL':'→ '+list[i].v;
+  $('desc').innerHTML=`<b>fi</b><div><span>inicio</span><span>${ref(ini)}</span></div><div><span>final</span><span>${ref(fin)}</span></div><div><span>qtd</span><span>${qtd}</span></div>`;
+  let h='';
+  list.forEach((n,i)=>{const t=(ini===i?chip('i','inicio'):'')+(fin===i?chip('f','final'):'')+(no===i?chip('n','no'):'');
+    h+=`<div class="col"><div class="tags">${t}</div><div class="cell ${n.c}"><span class="d">${n.v}</span><span class="p"></span></div></div>`;
+    if(i<list.length-1)h+='<div class="arr">→</div>';});
+  h+=list.length?'<div class="arr">→</div><div class="nul">NULL</div>':'<div class="nul">fila vazia</div>';
+  if(pend)h+=`<div class="gap"></div><div class="col"><div class="tags">${chip('n','no')}</div><div class="cell dash"><span class="d">${pend.v}</span><span class="p"></span></div></div>`+(pend.nul?'<div class="arr">→</div><div class="nul">NULL</div>':'');
+  $('row').innerHTML=h;
+  const box=$('codebox');box.innerHTML='';
+  CODE[cur].forEach(([k,t])=>{const e=document.createElement('span');e.className='ln'+(op&&k&&k===s?' on':'');e.textContent=t;box.appendChild(e)});
+  $('ins').disabled=$('rem').disabled=!!op;$('next').disabled=!op;$('next').textContent=op&&s===4?'Concluir':'Próximo passo';
+  if(op)msg(`Passo ${s}/4 — `+TXT[op.t][s-1]);
+}
+$('ins').onclick=()=>{const v=$('inp').value.trim();
+  if(!v){msg('Digite um valor antes de inserir.');$('inp').focus();return}
+  if(q.length>=8){msg('Limite visual de 8 elementos atingido. Remova algum.');return}
+  cur='ins';op={t:'ins',s:1,v};$('inp').value='';render()};
+$('rem').onclick=()=>{if(!q.length){msg('Fila vazia: não há o que remover. Na função, retorna-se 0.');return}cur='rem';op={t:'rem',s:1};render()};
+$('next').onclick=()=>{if(!op)return;if(op.s<4){op.s++}else{if(op.t==='ins')q.push(op.v);else q.shift();const r=op.t==='ins'?'inserido no final':'removido do início';op=null;render();msg('Operação concluída: elemento '+r+'. Tente outra.');return}render()};
+$('rst').onclick=()=>{q.splice(0,q.length,10,20,30);op=null;render();msg('Exemplo reiniciado com 10, 20 e 30.')};
+$('inp').addEventListener('keydown',e=>{if(e.key==='Enter')$('ins').click()});
+render();msg('Escolha Inserir ou Remover para ver cada passo do código e dos ponteiros.');
+const QZ=[{q:'Uma fila contém 10, 20 e 30 (do início ao final). Qual elemento sai primeiro?',o:['30','10','20'],a:1,e:'FIFO: o primeiro a entrar é o primeiro a sair.'},
+{q:'Ao remover o único elemento da fila, por que <code>final</code> deve receber NULL?',o:['Para liberar o nó descritor','Porque qtd ficaria negativo','Senão final apontaria para um nó já liberado'],a:2,e:'Ponteiro apontando para memória liberada causa erros graves.'},
+{q:'Qual a complexidade de inserir no final usando o ponteiro <code>final</code>?',o:['O(1)','O(n)','O(n²)'],a:0,e:'Não é preciso percorrer a fila: o último nó já é conhecido.'}];
+QZ.forEach((x,i)=>{const w=document.createElement('div');w.className='qz';w.innerHTML=`<p><strong>${i+1}.</strong> ${x.q}</p>`;const fb=document.createElement('p');fb.className='fb';
+  x.o.forEach((t,j)=>{const b=document.createElement('button');b.className='opt';b.textContent=t;b.onclick=()=>{w.querySelectorAll('.opt').forEach(o=>o.classList.remove('ok','no'));b.classList.add(j===x.a?'ok':'no');fb.textContent=j===x.a?'Correto! '+x.e:'Ainda não. Tente de novo.'};w.appendChild(b)});
+  w.appendChild(fb);$('quizBox').appendChild(w)});
+addEventListener('scroll',()=>{const h=document.documentElement;$('bar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'},{passive:true});
+const links=[...document.querySelectorAll('nav a')];
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id))}}),{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('section.card,h3[id]').forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
